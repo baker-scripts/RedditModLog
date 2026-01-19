@@ -3,6 +3,7 @@
 Test script to verify removal reason processing without Reddit API calls
 Creates a local markdown file to demonstrate the functionality
 """
+
 import os
 import sqlite3
 import sys
@@ -70,8 +71,7 @@ def test_removal_reasons():
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='processed_actions'")
         if not cursor.fetchone():
             print("   Database table not found, creating manually...")
-            cursor.execute(
-                """
+            cursor.execute("""
                 CREATE TABLE processed_actions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     action_id TEXT UNIQUE NOT NULL,
@@ -85,8 +85,7 @@ def test_removal_reasons():
                     created_at INTEGER NOT NULL,
                     processed_at INTEGER DEFAULT (strftime('%s', 'now'))
                 )
-            """
-            )
+            """)
             conn.commit()
         conn.close()
 
