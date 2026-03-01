@@ -1,0 +1,22 @@
+language: en-US
+reviews:
+  profile: assertive
+  request_changes_workflow: true
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+  path_instructions:
+    - path: "*.py"
+      instructions: |
+        Review for security issues — validate all user inputs.
+        Check for proper error handling and logging.
+    - path: ".github/workflows/**"
+      instructions: |
+        Check for command injection via untrusted GitHub context variables.
+        Verify secrets are not exposed in logs.
+    - path: "Dockerfile"
+      instructions: |
+        Check for security best practices — non-root user, minimal base image.
+chat:
+  auto_reply: true
