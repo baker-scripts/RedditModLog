@@ -244,7 +244,7 @@ docker run -d \
   -e PUID=1000 \
   -e PGID=1000 \
   -v ./config:/config \
-  ghcr.io/bakerboy448/redditmodlog:1
+  ghcr.io/baker-scripts/redditmodlog:1
 
 # 4. Using Docker Compose (recommended)
 docker compose up -d
@@ -270,7 +270,7 @@ docker run -d \
   -e REDDIT_PASSWORD=your_password \
   -e SOURCE_SUBREDDIT=yoursubreddit \
   -v ./config:/config \
-  ghcr.io/bakerboy448/redditmodlog:1
+  ghcr.io/baker-scripts/redditmodlog:1
 ```
 
 ### Docker Compose Example
@@ -280,7 +280,7 @@ version: '3.8'
 
 services:
   redditmodlog-opensignups:
-    image: ghcr.io/bakerboy448/redditmodlog:1
+    image: ghcr.io/baker-scripts/redditmodlog:1
     container_name: redditmodlog-opensignups
     restart: unless-stopped
     environment:
@@ -321,13 +321,13 @@ services:
 Pre-built images available at GitHub Container Registry:
 
 **Recommended Tags:**
-- `ghcr.io/bakerboy448/redditmodlog:1` - Major version (gets v1.x.x updates automatically)
-- `ghcr.io/bakerboy448/redditmodlog:1.4` - Minor version (gets v1.4.x patches only)
-- `ghcr.io/bakerboy448/redditmodlog:1.4.3` - Specific version (pinned, no updates)
+- `ghcr.io/baker-scripts/redditmodlog:1` - Major version (gets v1.x.x updates automatically)
+- `ghcr.io/baker-scripts/redditmodlog:1.4` - Minor version (gets v1.4.x patches only)
+- `ghcr.io/baker-scripts/redditmodlog:1.4.3` - Specific version (pinned, no updates)
 
 **Other Tags:**
-- `ghcr.io/bakerboy448/redditmodlog:latest` - Always latest build (use with caution)
-- `ghcr.io/bakerboy448/redditmodlog:sha-<commit>` - Specific commit SHA
+- `ghcr.io/baker-scripts/redditmodlog:latest` - Always latest build (use with caution)
+- `ghcr.io/baker-scripts/redditmodlog:sha-<commit>` - Specific commit SHA
 
 **Architectures:** `linux/amd64`, `linux/arm64`
 
