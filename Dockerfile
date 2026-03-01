@@ -20,11 +20,11 @@ FROM python:3.11-slim
 # OCI Labels
 LABEL org.opencontainers.image.title="Reddit ModLog Wiki Publisher" \
       org.opencontainers.image.description="Automated Reddit moderation log publisher to wiki pages" \
-      org.opencontainers.image.authors="bakerboy448" \
-      org.opencontainers.image.source="https://github.com/bakerboy448/RedditModLog" \
-      org.opencontainers.image.documentation="https://github.com/bakerboy448/RedditModLog/blob/main/README.md" \
+      org.opencontainers.image.authors="baker-scripts" \
+      org.opencontainers.image.source="https://github.com/baker-scripts/RedditModLog" \
+      org.opencontainers.image.documentation="https://github.com/baker-scripts/RedditModLog/blob/main/README.md" \
       org.opencontainers.image.licenses="GPL-3.0" \
-      org.opencontainers.image.vendor="bakerboy448" \
+      org.opencontainers.image.vendor="baker-scripts" \
       org.opencontainers.image.base.name="python:3.11-slim"
 
 # Install runtime dependencies and s6-overlay for user management
@@ -74,50 +74,91 @@ ENV PATH="/opt/venv/bin:$PATH" \
 RUN mkdir -p /config /config/data /config/logs /app /etc/s6-overlay/s6-rc.d/modlog-bot /etc/s6-overlay/s6-rc.d/init-modlogbot /etc/s6-overlay/scripts
 
 # Create s6 init script for user/group management
-RUN echo '#!/command/with-contenv bash\n\
-set -e\n\
-\n\
-# Validate that we have either config file OR environment variables\n\
-if [ ! -f /config/config.json ]; then\n\
-    echo "No config file found at /config/config.json, checking environment variables..."\n\
-    missing_vars=()\n\
-    [ -z "$REDDIT_CLIENT_ID" ] && missing_vars+=("REDDIT_CLIENT_ID")\n\
-    [ -z "$REDDIT_CLIENT_SECRET" ] && missing_vars+=("REDDIT_CLIENT_SECRET")\n\
-    [ -z "$REDDIT_USERNAME" ] && missing_vars+=("REDDIT_USERNAME")\n\
-    [ -z "$REDDIT_PASSWORD" ] && missing_vars+=("REDDIT_PASSWORD")\n\
-    [ -z "$SOURCE_SUBREDDIT" ] && missing_vars+=("SOURCE_SUBREDDIT")\n\
-    if [ ${#missing_vars[@]} -ne 0 ]; then\n\
-        echo "ERROR: No config file and missing required environment variables:" >&2\n\
-        printf "  - %s\n" "${missing_vars[@]}" >&2\n\
-        echo "" >&2\n\
-        echo "Either mount a config file to /config/config.json OR set environment variables." >&2\n\
-        exit 1\n\
-    fi\n\
-    echo "Using environment variables for configuration"\n\
-else\n\
-    echo "Using config file: /config/config.json"\n\
-fi\n\
-\n\
-PUID=${PUID:-1000}\n\
-PGID=${PGID:-1000}\n\
-echo "Setting UID:GID to ${PUID}:${PGID}"\n\
-\n\
-groupmod -o -g "$PGID" modlogbot\n\
-usermod -o -u "$PUID" modlogbot\n\
-\n\
-echo "Fixing ownership of /config"\n\
-chown -R modlogbot:modlogbot /config\n\
-\n\
-if [ ! -f /config/data/modlog.db ]; then\n\
-    echo "Initializing database directory"\n\
-    touch /config/data/modlog.db\n\
-    chown modlogbot:modlogbot /config/data/modlog.db\n\
+RUN echo '#!/command/with-contenv bash
+\
+set -e
+\
+
+\
+# Validate that we have either config file OR environment variables
+\
+if [ ! -f /config/config.json ]; then
+\
+    echo "No config file found at /config/config.json, checking environment variables..."
+\
+    missing_vars=()
+\
+    [ -z "$REDDIT_CLIENT_ID" ] && missing_vars+=("REDDIT_CLIENT_ID")
+\
+    [ -z "$REDDIT_CLIENT_SECRET" ] && missing_vars+=("REDDIT_CLIENT_SECRET")
+\
+    [ -z "$REDDIT_USERNAME" ] && missing_vars+=("REDDIT_USERNAME")
+\
+    [ -z "$REDDIT_PASSWORD" ] && missing_vars+=("REDDIT_PASSWORD")
+\
+    [ -z "$SOURCE_SUBREDDIT" ] && missing_vars+=("SOURCE_SUBREDDIT")
+\
+    if [ ${#missing_vars[@]} -ne 0 ]; then
+\
+        echo "ERROR: No config file and missing required environment variables:" >&2
+\
+        printf "  - %s
+" "${missing_vars[@]}" >&2
+\
+        echo "" >&2
+\
+        echo "Either mount a config file to /config/config.json OR set environment variables." >&2
+\
+        exit 1
+\
+    fi
+\
+    echo "Using environment variables for configuration"
+\
+else
+\
+    echo "Using config file: /config/config.json"
+\
+fi
+\
+
+\
+PUID=${PUID:-1000}
+\
+PGID=${PGID:-1000}
+\
+echo "Setting UID:GID to ${PUID}:${PGID}"
+\
+
+\
+groupmod -o -g "$PGID" modlogbot
+\
+usermod -o -u "$PUID" modlogbot
+\
+
+\
+echo "Fixing ownership of /config"
+\
+chown -R modlogbot:modlogbot /config
+\
+
+\
+if [ ! -f /config/data/modlog.db ]; then
+\
+    echo "Initializing database directory"
+\
+    touch /config/data/modlog.db
+\
+    chown modlogbot:modlogbot /config/data/modlog.db
+\
 fi' > /etc/s6-overlay/scripts/init-modlogbot-run && \
     chmod +x /etc/s6-overlay/scripts/init-modlogbot-run
 
 # Create s6 service run script
-RUN echo '#!/command/with-contenv bash\n\
-cd /app\n\
+RUN echo '#!/command/with-contenv bash
+\
+cd /app
+\
 exec s6-setuidgid modlogbot python modlog_wiki_publisher.py --config /config/config.json --continuous' > /etc/s6-overlay/scripts/modlog-bot-run && \
     chmod +x /etc/s6-overlay/scripts/modlog-bot-run
 
