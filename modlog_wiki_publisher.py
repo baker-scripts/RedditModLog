@@ -3,6 +3,7 @@
 Reddit Modlog Wiki Publisher
 Scrapes moderation logs and publishes them to a subreddit wiki page
 """
+
 import argparse
 import hashlib
 import json
@@ -111,12 +112,10 @@ def get_db_version():
         cursor = conn.cursor()
 
         # Check if version table exists
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT name FROM sqlite_master
             WHERE type='table' AND name='schema_version'
-        """
-        )
+        """)
 
         if not cursor.fetchone():
             conn.close()
@@ -138,15 +137,13 @@ def set_db_version(version):
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        cursor.execute(
-            """
+        cursor.execute("""
             CREATE TABLE IF NOT EXISTS schema_version (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 version INTEGER NOT NULL,
                 applied_at INTEGER DEFAULT (strftime('%s', 'now'))
             )
-        """
-        )
+        """)
 
         cursor.execute("INSERT INTO schema_version (version) VALUES (?)", (version,))
         conn.commit()
@@ -245,16 +242,14 @@ def migrate_database():
         # Migration from version 0 to 1: Initial schema
         if current_version < 1:
             logger.info("Applying migration: Initial schema (v0 -> v1)")
-            cursor.execute(
-                """
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS processed_actions (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     action_id TEXT UNIQUE NOT NULL,
                     created_at INTEGER NOT NULL,
                     processed_at INTEGER DEFAULT (strftime('%s', 'now'))
                 )
-            """
-            )
+            """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_action_id ON processed_actions(action_id)")
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_created_at ON processed_actions(created_at)")
             set_db_version(1)
@@ -315,8 +310,7 @@ def migrate_database():
         if current_version < 4:
             logger.info("Applying migration: Add wiki hash caching table (v3 -> v4)")
 
-            cursor.execute(
-                """
+            cursor.execute("""
                 CREATE TABLE IF NOT EXISTS wiki_hash_cache (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     subreddit TEXT NOT NULL,
@@ -325,8 +319,7 @@ def migrate_database():
                     last_updated INTEGER DEFAULT (strftime('%s', 'now')),
                     UNIQUE(subreddit, wiki_page)
                 )
-            """
-            )
+            """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_subreddit_page ON wiki_hash_cache(subreddit, wiki_page)")
             logger.info("Created wiki_hash_cache table")
 
@@ -666,12 +659,10 @@ def update_missing_subreddits():
         cursor = conn.cursor()
 
         # Get entries with NULL subreddit but valid permalink
-        cursor.execute(
-            """
+        cursor.execute("""
             SELECT id, target_permalink FROM processed_actions
             WHERE subreddit IS NULL AND target_permalink IS NOT NULL
-        """
-        )
+        """)
 
         updates = []
         for row_id, permalink in cursor.fetchall():
@@ -751,9 +742,7 @@ def get_recent_actions_from_db(config: Dict[str, Any], force_all_actions: bool =
             SELECT COUNT(*) FROM processed_actions
             WHERE created_at >= ? AND action_type IN ({})
             AND LOWER(subreddit) = LOWER(?)
-        """.format(
-                placeholders
-            ),
+        """.format(placeholders),
             [cutoff_timestamp] + list(wiki_actions) + [subreddit_name],
         )
 
