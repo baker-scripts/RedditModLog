@@ -1,7 +1,7 @@
 services:
   modlog-bot:
     build: .
-    image: ghcr.io/bakerboy448/redditmodlog:latest
+    image: ghcr.io/baker-scripts/redditmodlog:latest
     container_name: reddit-modlog-bot
     restart: unless-stopped
     environment:
