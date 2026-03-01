@@ -20,11 +20,11 @@ FROM python:3.11-slim
 # OCI Labels
 LABEL org.opencontainers.image.title="Reddit ModLog Wiki Publisher" \
       org.opencontainers.image.description="Automated Reddit moderation log publisher to wiki pages" \
-      org.opencontainers.image.authors="bakerboy448" \
-      org.opencontainers.image.source="https://github.com/bakerboy448/RedditModLog" \
-      org.opencontainers.image.documentation="https://github.com/bakerboy448/RedditModLog/blob/main/README.md" \
+      org.opencontainers.image.authors="baker-scripts" \
+      org.opencontainers.image.source="https://github.com/baker-scripts/RedditModLog" \
+      org.opencontainers.image.documentation="https://github.com/baker-scripts/RedditModLog/blob/main/README.md" \
       org.opencontainers.image.licenses="GPL-3.0" \
-      org.opencontainers.image.vendor="bakerboy448" \
+      org.opencontainers.image.vendor="baker-scripts" \
       org.opencontainers.image.base.name="python:3.11-slim"
 
 # Install runtime dependencies and s6-overlay for user management
