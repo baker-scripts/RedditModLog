@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.11-slim AS builder
+FROM python:3.14-slim AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -15,7 +15,7 @@ COPY requirements.txt /tmp/
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
 
 # Runtime stage
-FROM python:3.11-slim
+FROM python:3.14-slim
 
 # OCI Labels
 LABEL org.opencontainers.image.title="Reddit ModLog Wiki Publisher" \
