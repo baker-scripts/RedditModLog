@@ -24,7 +24,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: bakerboy448/redditmodlog
+  IMAGE_NAME: ${{ github.repository_owner }}/redditmodlog
 
 jobs:
   build:
@@ -67,7 +67,7 @@ jobs:
           labels: |
             org.opencontainers.image.title=Reddit ModLog Wiki Publisher
             org.opencontainers.image.description=Automated Reddit moderation log publisher to wiki pages
-            org.opencontainers.image.vendor=bakerboy448
+            org.opencontainers.image.vendor=${{ github.repository_owner }}
             org.opencontainers.image.licenses=GPL-3.0
 
       - name: Build and push Docker image
