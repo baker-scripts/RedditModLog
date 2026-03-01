@@ -1,6 +1,6 @@
 [Unit]
 Description=Reddit ModLog Wiki Publisher for /r/%i
-Documentation=https://github.com/bakerboy448/RedditModLog
+Documentation=https://github.com/baker-scripts/RedditModLog
 After=network.target
 Wants=network-online.target
 
