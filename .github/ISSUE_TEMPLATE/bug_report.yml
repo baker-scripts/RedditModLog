@@ -1,0 +1,65 @@
+name: Bug Report
+description: Report a bug with the modlog publisher
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Fill out all required fields.** Incomplete reports will be closed.
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - Wiki publishing failure
+        - Modlog entries missing or incorrect
+        - Database / deduplication issue
+        - Docker deployment
+        - Configuration
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment method
+      options:
+        - Docker
+        - Systemd service
+        - Python native
+    validations:
+      required: true
+  - type: input
+    id: python-version
+    attributes:
+      label: Python version
+      description: "Output of: python3 --version"
+      placeholder: "Python 3.12.3"
+    validations:
+      required: true
+  - type: input
+    id: docker-version
+    attributes:
+      label: Docker version (if applicable)
+      description: "Output of: docker --version. Leave blank if not using Docker."
+      placeholder: "Docker version 27.5.1"
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Log output
+      description: Relevant log output. Redact subreddit names and tokens if needed.
+      render: text
+    validations:
+      required: true

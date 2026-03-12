@@ -414,10 +414,20 @@ Add the bot as a moderator or approved wiki contributor:
 | Rate limiting | Increase `--interval` and reduce `--batch-size`  |
 | Growing DB    | Lower `--retention-days` or run cleanup manually |
 
-## License
+## Contributors
 
-MIT or GPLv3 (pick based on your repo)
+<a href="https://github.com/baker-scripts/RedditModLog/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=baker-scripts/RedditModLog" alt="Contributors" />
+</a>
+
+## Disclaimer
+
+This software is provided as-is with no warranty. Always review your Reddit API credentials and bot permissions before deployment. The authors are not responsible for any moderation issues or account actions resulting from its use. This project is not affiliated with or endorsed by Reddit.
 
 ## Contributing
 
 PRs welcome. Include test runs and changes to CLI/help output.
+
+## License
+
+[GPL-3.0](LICENSE)

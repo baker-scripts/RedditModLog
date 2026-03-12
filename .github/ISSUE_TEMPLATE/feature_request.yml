@@ -1,0 +1,30 @@
+name: Feature Request
+description: Suggest an improvement to the modlog publisher
+labels: [enhancement]
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - New modlog action type
+        - Wiki formatting
+        - Notification support
+        - Multi-subreddit feature
+        - Docker improvement
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What would you like?
+    validations:
+      required: true
+  - type: textarea
+    id: use-case
+    attributes:
+      label: Why is this needed?
+    validations:
+      required: true
