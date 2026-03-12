@@ -87,3 +87,4 @@ desktop.ini
 # Reddit specific
 processed_actions.json
 modlog_backup_*.json
+.claude/settings.local.json
