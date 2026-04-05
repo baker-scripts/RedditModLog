@@ -22,7 +22,11 @@ on:
           - 'true'
           - 'false'
 
-env:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/redditmodlog
 
