@@ -6,6 +6,7 @@ set -e
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
+# shellcheck disable=SC2034 # Reserved for future use
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
@@ -14,16 +15,16 @@ echo "========================================="
 
 # Check if running as root
 if [[ $EUID -ne 0 ]]; then
-   echo -e "${RED}This script must be run as root${NC}"
-   exit 1
+  echo -e "${RED}This script must be run as root${NC}"
+  exit 1
 fi
 
 # Create user if it doesn't exist
 if ! id "modlogbot" &>/dev/null; then
-    echo "Creating modlogbot user..."
-    useradd -r -s /bin/false -d /opt/RedditModLog -m modlogbot
+  echo "Creating modlogbot user..."
+  useradd -r -s /bin/false -d /opt/RedditModLog -m modlogbot
 else
-    echo "User modlogbot already exists"
+  echo "User modlogbot already exists"
 fi
 
 # Create necessary directories
@@ -52,7 +53,7 @@ cp redditmodlog.logrotate /etc/logrotate.d/redditmodlog
 echo "Creating example configurations..."
 
 # OpenSignups config
-cat > /etc/redditmodlog/opensignups.json.example <<EOF
+cat >/etc/redditmodlog/opensignups.json.example <<EOF
 {
   "reddit": {
     "client_id": "your_client_id",
@@ -71,7 +72,7 @@ cat > /etc/redditmodlog/opensignups.json.example <<EOF
 EOF
 
 # Usenet config
-cat > /etc/redditmodlog/usenet.json.example <<EOF
+cat >/etc/redditmodlog/usenet.json.example <<EOF
 {
   "reddit": {
     "client_id": "your_client_id",
@@ -90,7 +91,7 @@ cat > /etc/redditmodlog/usenet.json.example <<EOF
 EOF
 
 # Example environment file
-cat > /etc/redditmodlog/example.env <<EOF
+cat >/etc/redditmodlog/example.env <<EOF
 # Optional environment variables to override config file
 # Uncomment and set as needed
 
