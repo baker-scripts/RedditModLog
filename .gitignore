@@ -88,3 +88,7 @@ desktop.ini
 processed_actions.json
 modlog_backup_*.json
 .claude/settings.local.json
+
+# MemPalace per-project files (issue #185)
+mempalace.yaml
+entities.json
