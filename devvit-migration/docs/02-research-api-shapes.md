@@ -55,7 +55,7 @@ export interface ModAction {
   id: string;              // "ModAction_1b1af634-..." — the modlog entry id
   type: ModActionType;
   moderatorName: string;
-  moderatorId: T2;         // "t2_..." 
+  moderatorId: T2;         // "t2_..."
   createdAt: Date;         // native Date (Python had to parse epoch)
   subredditName: string;
   subredditId: T5;         // "t5_..."
