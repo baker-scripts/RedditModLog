@@ -161,14 +161,10 @@ def validate_config_value(key, value, config_limits):
 
     limits = config_limits[key]
     if value < limits["min"]:
-        logger.warning(
-            f"{key} value {value} below minimum {limits['min']}, using minimum"
-        )
+        logger.warning(f"{key} value {value} below minimum {limits['min']}, using minimum")
         return limits["min"]
     elif value > limits["max"]:
-        logger.warning(
-            f"{key} value {value} above maximum {limits['max']}, using maximum"
-        )
+        logger.warning(f"{key} value {value} above maximum {limits['max']}, using maximum")
         return limits["max"]
 
     return value
@@ -183,14 +179,10 @@ def validate_wiki_actions(wiki_actions):
         logger.info("Empty wiki_actions, using defaults")
         return DEFAULT_WIKI_ACTIONS
 
-    invalid_actions = [
-        action for action in wiki_actions if action not in VALID_MODLOG_ACTIONS
-    ]
+    invalid_actions = [action for action in wiki_actions if action not in VALID_MODLOG_ACTIONS]
 
     if invalid_actions:
-        raise ValueError(
-            f"Invalid modlog actions: {invalid_actions}. Valid actions: {sorted(VALID_MODLOG_ACTIONS)}"
-        )
+        raise ValueError(f"Invalid modlog actions: {invalid_actions}. Valid actions: {sorted(VALID_MODLOG_ACTIONS)}")
 
     logger.info(f"Validated {len(wiki_actions)} wiki_actions: {wiki_actions}")
     return wiki_actions
@@ -208,9 +200,7 @@ def apply_config_defaults_and_limits(config):
     # Set default wiki actions if not specified
     if "wiki_actions" not in config:
         config["wiki_actions"] = DEFAULT_WIKI_ACTIONS
-        logger.info(
-            "Using default wiki_actions: removals, removal reasons, and approvals"
-        )
+        logger.info("Using default wiki_actions: removals, removal reasons, and approvals")
     else:
         config["wiki_actions"] = validate_wiki_actions(config["wiki_actions"])
 
@@ -229,9 +219,7 @@ def apply_config_defaults_and_limits(config):
 
     # CRITICAL SECURITY CHECK: Never allow moderator de-anonymization on live Reddit
     if not config.get("anonymize_moderators", True):
-        raise ValueError(
-            "SECURITY: anonymize_moderators=false is not allowed. This would expose moderator identities publicly."
-        )
+        raise ValueError("SECURITY: anonymize_moderators=false is not allowed. This would expose moderator identities publicly.")
 
     return config
 
@@ -242,14 +230,10 @@ def migrate_database():
     target_version = CURRENT_DB_VERSION
 
     if current_version >= target_version:
-        logger.info(
-            f"Database already at version {current_version}, no migration needed"
-        )
+        logger.info(f"Database already at version {current_version}, no migration needed")
         return
 
-    logger.info(
-        f"Migrating database from version {current_version} to {target_version}"
-    )
+    logger.info(f"Migrating database from version {current_version} to {target_version}")
 
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -266,12 +250,8 @@ def migrate_database():
                     processed_at INTEGER DEFAULT (strftime('%s', 'now'))
                 )
             """)
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_action_id ON processed_actions(action_id)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_created_at ON processed_actions(created_at)"
-            )
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_action_id ON processed_actions(action_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_created_at ON processed_actions(created_at)")
             set_db_version(1)
 
         # Migration from version 1 to 2: Add tracking columns
@@ -294,27 +274,17 @@ def migrate_database():
             for column_name, column_type in columns_to_add:
                 if column_name not in existing_columns:
                     try:
-                        cursor.execute(
-                            f"ALTER TABLE processed_actions ADD COLUMN {column_name} {column_type}"
-                        )
+                        cursor.execute(f"ALTER TABLE processed_actions ADD COLUMN {column_name} {column_type}")
                         logger.info(f"Added column: {column_name}")
                     except sqlite3.OperationalError as e:
                         if "duplicate column name" not in str(e):
                             raise
 
             # Add new indexes
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_display_id ON processed_actions(display_id)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_target_id ON processed_actions(target_id)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_target_type ON processed_actions(target_type)"
-            )
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_moderator ON processed_actions(moderator)"
-            )
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_display_id ON processed_actions(display_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_target_id ON processed_actions(target_id)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_target_type ON processed_actions(target_type)")
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_moderator ON processed_actions(moderator)")
 
             set_db_version(2)
 
@@ -328,9 +298,7 @@ def migrate_database():
 
             if "removal_reason" not in existing_columns:
                 try:
-                    cursor.execute(
-                        "ALTER TABLE processed_actions ADD COLUMN removal_reason TEXT"
-                    )
+                    cursor.execute("ALTER TABLE processed_actions ADD COLUMN removal_reason TEXT")
                     logger.info("Added column: removal_reason")
                 except sqlite3.OperationalError as e:
                     if "duplicate column name" not in str(e):
@@ -352,9 +320,7 @@ def migrate_database():
                     UNIQUE(subreddit, wiki_page)
                 )
             """)
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_subreddit_page ON wiki_hash_cache(subreddit, wiki_page)"
-            )
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_subreddit_page ON wiki_hash_cache(subreddit, wiki_page)")
             logger.info("Created wiki_hash_cache table")
 
             set_db_version(4)
@@ -369,25 +335,19 @@ def migrate_database():
 
             if "subreddit" not in existing_columns:
                 try:
-                    cursor.execute(
-                        "ALTER TABLE processed_actions ADD COLUMN subreddit TEXT"
-                    )
+                    cursor.execute("ALTER TABLE processed_actions ADD COLUMN subreddit TEXT")
                     logger.info("Added column: subreddit")
                 except sqlite3.OperationalError as e:
                     if "duplicate column name" not in str(e):
                         raise
 
-            cursor.execute(
-                "CREATE INDEX IF NOT EXISTS idx_subreddit ON processed_actions(subreddit)"
-            )
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_subreddit ON processed_actions(subreddit)")
 
             set_db_version(5)
 
         conn.commit()
         conn.close()
-        logger.info(
-            f"Database migration completed successfully to version {target_version}"
-        )
+        logger.info(f"Database migration completed successfully to version {target_version}")
 
     except Exception as e:
         logger.error(f"Database migration failed: {e}")
@@ -422,10 +382,7 @@ def get_cached_wiki_hash(subreddit: str, wiki_page: str) -> Optional[str]:
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT content_hash FROM wiki_hash_cache WHERE subreddit = ? AND wiki_page = ?",
-            (subreddit, wiki_page),
-        )
+        cursor.execute("SELECT content_hash FROM wiki_hash_cache WHERE subreddit = ? AND wiki_page = ?", (subreddit, wiki_page))
         result = cursor.fetchone()
         conn.close()
         return result[0] if result else None
@@ -460,9 +417,7 @@ def censor_email_addresses(text):
     import re
 
     # Replace email addresses with [EMAIL]
-    return re.sub(
-        r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", "[EMAIL]", text
-    )
+    return re.sub(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", "[EMAIL]", text)
 
 
 def sanitize_for_markdown(text: str) -> str:
@@ -585,9 +540,7 @@ def get_target_permalink(action):
         elif hasattr(action, "target_comment") and action.target_comment:
             if hasattr(action.target_comment, "permalink"):
                 return f"https://reddit.com{action.target_comment.permalink}"
-            elif hasattr(action.target_comment, "id") and hasattr(
-                action.target_comment, "submission"
-            ):
+            elif hasattr(action.target_comment, "id") and hasattr(action.target_comment, "submission"):
                 # For comments, construct proper permalink with submission ID
                 return f"https://reddit.com/comments/{action.target_comment.submission.id}/_/{action.target_comment.id}/"
             elif hasattr(action.target_comment, "id"):
@@ -599,11 +552,7 @@ def get_target_permalink(action):
             permalink = action.target_permalink
             # Only use if it's actual content (contains /comments/) not user profile (/u/)
             if "/comments/" in permalink and "/u/" not in permalink:
-                return (
-                    f"https://reddit.com{permalink}"
-                    if not permalink.startswith("http")
-                    else permalink
-                )
+                return f"https://reddit.com{permalink}" if not permalink.startswith("http") else permalink
 
         # NEVER fall back to user profiles - only link to actual content
     except:
@@ -617,9 +566,7 @@ def is_duplicate_action(action_id: str) -> bool:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        cursor.execute(
-            "SELECT 1 FROM processed_actions WHERE action_id = ? LIMIT 1", (action_id,)
-        )
+        cursor.execute("SELECT 1 FROM processed_actions WHERE action_id = ? LIMIT 1", (action_id,))
 
         result = cursor.fetchone() is not None
         conn.close()
@@ -651,11 +598,7 @@ def store_processed_action(action, subreddit_name=None):
         removal_reason = None
 
         # For addremovalreason actions, use description field (contains actual text)
-        if (
-            action.action == "addremovalreason"
-            and hasattr(action, "description")
-            and action.description
-        ):
+        if action.action == "addremovalreason" and hasattr(action, "description") and action.description:
             removal_reason = censor_email_addresses(str(action.description).strip())
         # First priority: mod_note (actual removal reason text)
         elif hasattr(action, "mod_note") and action.mod_note:
@@ -678,9 +621,7 @@ def store_processed_action(action, subreddit_name=None):
 
         # Add target_author column if it doesn't exist
         if "target_author" not in columns:
-            cursor.execute(
-                "ALTER TABLE processed_actions ADD COLUMN target_author TEXT"
-            )
+            cursor.execute("ALTER TABLE processed_actions ADD COLUMN target_author TEXT")
 
         # Extract target author
         target_author = None
@@ -704,13 +645,9 @@ def store_processed_action(action, subreddit_name=None):
                 get_target_type(action),
                 generate_display_id(action),
                 target_permalink,
-                sanitize_for_markdown(
-                    removal_reason
-                ),  # Store properly processed removal reason
+                sanitize_for_markdown(removal_reason),  # Store properly processed removal reason
                 target_author,
-                int(action.created_utc)
-                if isinstance(action.created_utc, (int, float))
-                else int(action.created_utc.timestamp()),
+                int(action.created_utc) if isinstance(action.created_utc, (int, float)) else int(action.created_utc.timestamp()),
                 subreddit_name or "unknown",
             ),
         )
@@ -742,12 +679,8 @@ def update_missing_subreddits():
 
         # Update entries in batches
         if updates:
-            cursor.executemany(
-                "UPDATE processed_actions SET subreddit = ? WHERE id = ?", updates
-            )
-            logger.info(
-                f"Updated {len(updates)} entries with extracted subreddit names"
-            )
+            cursor.executemany("UPDATE processed_actions SET subreddit = ? WHERE id = ?", updates)
+            logger.info(f"Updated {len(updates)} entries with extracted subreddit names")
 
         conn.commit()
         conn.close()
@@ -759,21 +692,15 @@ def update_missing_subreddits():
 def cleanup_old_entries(retention_days: int):
     """Remove entries older than retention_days"""
     if retention_days <= 0:
-        retention_days = CONFIG_LIMITS["retention_days"][
-            "default"
-        ]  # No config object available here
+        retention_days = CONFIG_LIMITS["retention_days"]["default"]  # No config object available here
 
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
 
-        cutoff_timestamp = int(
-            (datetime.now() - datetime.fromtimestamp(0)).total_seconds()
-        ) - (retention_days * 86400)
+        cutoff_timestamp = int((datetime.now() - datetime.fromtimestamp(0)).total_seconds()) - (retention_days * 86400)
 
-        cursor.execute(
-            "DELETE FROM processed_actions WHERE created_at < ?", (cutoff_timestamp,)
-        )
+        cursor.execute("DELETE FROM processed_actions WHERE created_at < ?", (cutoff_timestamp,))
 
         deleted_count = cursor.rowcount
         conn.commit()
@@ -785,11 +712,7 @@ def cleanup_old_entries(retention_days: int):
         logger.error(f"Error during cleanup: {e}")
 
 
-def get_recent_actions_from_db(
-    config: Dict[str, Any],
-    force_all_actions: bool = False,
-    show_only_removals: bool = True,
-) -> List:
+def get_recent_actions_from_db(config: Dict[str, Any], force_all_actions: bool = False, show_only_removals: bool = True) -> List:
     """Fetch recent actions from database for force refresh"""
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -798,9 +721,7 @@ def get_recent_actions_from_db(
         # For force refresh, get ALL actions, not just wiki_actions filter
         if force_all_actions:
             # Get all unique action types in database
-            cursor.execute(
-                "SELECT DISTINCT action_type FROM processed_actions WHERE action_type IS NOT NULL"
-            )
+            cursor.execute("SELECT DISTINCT action_type FROM processed_actions WHERE action_type IS NOT NULL")
             wiki_actions = set(row[0] for row in cursor.fetchall())
             logger.info(f"Force refresh: including all action types: {wiki_actions}")
         elif show_only_removals:
@@ -811,9 +732,7 @@ def get_recent_actions_from_db(
 
         # Get recent actions within retention period
         retention_days = get_config_with_default(config, "retention_days")
-        cutoff_timestamp = int(
-            (datetime.now() - datetime.fromtimestamp(0)).total_seconds()
-        ) - (retention_days * 86400)
+        cutoff_timestamp = int((datetime.now() - datetime.fromtimestamp(0)).total_seconds()) - (retention_days * 86400)
 
         # Limit to max wiki entries
         max_entries = get_config_with_default(config, "max_wiki_entries_per_page")
@@ -822,9 +741,7 @@ def get_recent_actions_from_db(
         # STRICT subreddit filtering - only exact matches, no nulls
         subreddit_name = config.get("source_subreddit", "")
 
-        logger.debug(
-            f"Query parameters - cutoff: {cutoff_timestamp}, wiki_actions: {wiki_actions}, subreddit: '{subreddit_name}', max_entries: {max_entries}"
-        )
+        logger.debug(f"Query parameters - cutoff: {cutoff_timestamp}, wiki_actions: {wiki_actions}, subreddit: '{subreddit_name}', max_entries: {max_entries}")
 
         # Check if actions exist for the requested subreddit
         cursor.execute(
@@ -840,9 +757,7 @@ def get_recent_actions_from_db(
 
         # If no actions exist for this subreddit, return empty list
         if action_count == 0:
-            logger.info(
-                f"No actions found for subreddit '{subreddit_name}' in the specified time range"
-            )
+            logger.info(f"No actions found for subreddit '{subreddit_name}' in the specified time range")
             conn.close()
             return []
 
@@ -859,9 +774,7 @@ def get_recent_actions_from_db(
 
         all_subreddits = [row[0] for row in cursor.fetchall() if row[0]]
         if len(all_subreddits) > 1:
-            logger.info(
-                f"Multi-subreddit database contains data for: {sorted(all_subreddits)}"
-            )
+            logger.info(f"Multi-subreddit database contains data for: {sorted(all_subreddits)}")
         logger.info(f"Retrieving actions for subreddit: '{subreddit_name}'")
 
         query = f"""
@@ -874,10 +787,7 @@ def get_recent_actions_from_db(
             LIMIT ?
         """
 
-        cursor.execute(
-            query,
-            [cutoff_timestamp] + list(wiki_actions) + [subreddit_name, max_entries],
-        )
+        cursor.execute(query, [cutoff_timestamp] + list(wiki_actions) + [subreddit_name, max_entries])
         rows = cursor.fetchall()
         conn.close()
 
@@ -886,37 +796,12 @@ def get_recent_actions_from_db(
         # Convert database rows to mock action objects for compatibility with existing functions
         mock_actions = []
         for row in rows:
-            (
-                action_id,
-                action_type,
-                moderator,
-                target_id,
-                target_type,
-                display_id,
-                target_permalink,
-                removal_reason,
-                target_author,
-                created_at,
-            ) = row
-            logger.debug(
-                f"Processing cached action: {action_type} by {moderator} at {created_at}"
-            )
+            action_id, action_type, moderator, target_id, target_type, display_id, target_permalink, removal_reason, target_author, created_at = row
+            logger.debug(f"Processing cached action: {action_type} by {moderator} at {created_at}")
 
             # Create a mock action object with the data we have
             class MockAction:
-                def __init__(
-                    self,
-                    action_id,
-                    action_type,
-                    moderator,
-                    target_id,
-                    target_type,
-                    display_id,
-                    target_permalink,
-                    removal_reason,
-                    target_author,
-                    created_at,
-                ):
+                def __init__(self, action_id, action_type, moderator, target_id, target_type, display_id, target_permalink, removal_reason, target_author, created_at):
                     self.id = action_id
                     self.action = action_type
                     self.mod = moderator
@@ -925,37 +810,17 @@ def get_recent_actions_from_db(
                     self.details = removal_reason
                     self.display_id = display_id
                     self.target_permalink = (
-                        target_permalink.replace("https://reddit.com", "")
-                        if target_permalink
-                        and target_permalink.startswith("https://reddit.com")
-                        else target_permalink
+                        target_permalink.replace("https://reddit.com", "") if target_permalink and target_permalink.startswith("https://reddit.com") else target_permalink
                     )
                     self.target_permalink_cached = target_permalink
 
                     # Use actual target_author from database
                     self.target_title = None
-                    self.target_author = (
-                        target_author  # Use actual target_author from database
-                    )
+                    self.target_author = target_author  # Use actual target_author from database
 
-            mock_actions.append(
-                MockAction(
-                    action_id,
-                    action_type,
-                    moderator,
-                    target_id,
-                    target_type,
-                    display_id,
-                    target_permalink,
-                    removal_reason,
-                    target_author,
-                    created_at,
-                )
-            )
+            mock_actions.append(MockAction(action_id, action_type, moderator, target_id, target_type, display_id, target_permalink, removal_reason, target_author, created_at))
 
-        logger.info(
-            f"Retrieved {len(mock_actions)} actions from database for force refresh"
-        )
+        logger.info(f"Retrieved {len(mock_actions)} actions from database for force refresh")
         return mock_actions
 
     except Exception as e:
@@ -974,36 +839,19 @@ def format_content_link(action) -> str:
         formatted_link = action.target_permalink_cached
 
     # Check if comment using main branch logic
-    is_comment = bool(
-        hasattr(action, "target_permalink")
-        and action.target_permalink
-        and "/comments/" in action.target_permalink
-        and action.target_permalink.count("/") > 6
-    )
+    is_comment = bool(hasattr(action, "target_permalink") and action.target_permalink and "/comments/" in action.target_permalink and action.target_permalink.count("/") > 6)
 
     # Determine title using main branch approach
     formatted_title = ""
     if is_comment and hasattr(action, "target_title") and action.target_title:
         formatted_title = action.target_title
-    elif is_comment and (
-        not hasattr(action, "target_title") or not action.target_title
-    ):
-        target_author = (
-            action.target_author
-            if hasattr(action, "target_author") and action.target_author
-            else "[deleted]"
-        )
+    elif is_comment and (not hasattr(action, "target_title") or not action.target_title):
+        target_author = action.target_author if hasattr(action, "target_author") and action.target_author else "[deleted]"
         formatted_title = f"Comment by u/{target_author}"
     elif not is_comment and hasattr(action, "target_title") and action.target_title:
         formatted_title = action.target_title
-    elif not is_comment and (
-        not hasattr(action, "target_title") or not action.target_title
-    ):
-        target_author = (
-            action.target_author
-            if hasattr(action, "target_author") and action.target_author
-            else "[deleted]"
-        )
+    elif not is_comment and (not hasattr(action, "target_title") or not action.target_title):
+        target_author = action.target_author if hasattr(action, "target_author") and action.target_author else "[deleted]"
         formatted_title = f"Post by u/{target_author}"
     else:
         formatted_title = "Unknown content"
@@ -1022,9 +870,7 @@ def extract_content_id_from_permalink(permalink):
     import re
 
     # Check for comment ID first - URLs like /comments/abc123/title/def456/
-    comment_match = re.search(
-        r"/comments/[a-zA-Z0-9]+/[^/]*/([a-zA-Z0-9]+)/?", permalink
-    )
+    comment_match = re.search(r"/comments/[a-zA-Z0-9]+/[^/]*/([a-zA-Z0-9]+)/?", permalink)
     if comment_match:
         return f"t1_{comment_match.group(1)}"
 
@@ -1066,20 +912,14 @@ def format_modlog_entry(action, config: Dict[str, Any]) -> Dict[str, str]:
             content_id = extracted_id.replace("t3_", "").replace("t1_", "")[:8]
 
     display_action = action.action
-    if (
-        action.action in REMOVAL_ACTIONS
-        and get_moderator_name(action, False) == "AutoModerator"
-    ):
+    if action.action in REMOVAL_ACTIONS and get_moderator_name(action, False) == "AutoModerator":
         display_action = f"filter-{action.action}"
 
     return {
         "time": get_action_datetime(action).strftime("%H:%M:%S UTC"),
         "action": display_action,
         "id": content_id,
-        "moderator": get_moderator_name(
-            action, config.get("anonymize_moderators", True)
-        )
-        or "Unknown",
+        "moderator": get_moderator_name(action, config.get("anonymize_moderators", True)) or "Unknown",
         "content": format_content_link(action),
         "reason": sanitize_for_markdown(str(reason_text)),
         "inquire": generate_modmail_link(config["source_subreddit"], action),
@@ -1113,11 +953,7 @@ def generate_modmail_link(subreddit: str, action) -> str:
     if hasattr(action, "target_title") and action.target_title:
         title = action.target_title
     else:
-        title = (
-            f"Content by u/{action.target_author}"
-            if hasattr(action, "target_author") and action.target_author
-            else "Unknown content"
-        )
+        title = f"Content by u/{action.target_author}" if hasattr(action, "target_author") and action.target_author else "Unknown content"
 
     # Truncate title if too long
     max_title_length = 50
@@ -1129,11 +965,7 @@ def generate_modmail_link(subreddit: str, action) -> str:
     if hasattr(action, "target_permalink_cached") and action.target_permalink_cached:
         url = action.target_permalink_cached
     elif hasattr(action, "target_permalink") and action.target_permalink:
-        url = (
-            f"https://www.reddit.com{action.target_permalink}"
-            if not action.target_permalink.startswith("http")
-            else action.target_permalink
-        )
+        url = f"https://www.reddit.com{action.target_permalink}" if not action.target_permalink.startswith("http") else action.target_permalink
 
     # Create subject line with content ID for tracking
     subject = f"{removal_type} Removal Inquiry - {title} [ID: {content_id}]"
@@ -1158,9 +990,7 @@ def build_wiki_content(actions: List, config: Dict[str, Any]) -> str:
     """Build wiki page content from actions"""
     # Add timestamp header at the top
     current_time = datetime.now(timezone.utc)
-    timestamp_header = (
-        f"**Last Updated:** {current_time.strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n---\n\n"
-    )
+    timestamp_header = f"**Last Updated:** {current_time.strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n---\n\n"
 
     if not actions:
         return timestamp_header + "No recent moderation actions found."
@@ -1176,12 +1006,8 @@ def build_wiki_content(actions: List, config: Dict[str, Any]) -> str:
                 mixed_subreddits.add(action.subreddit)
 
     if mixed_subreddits:
-        logger.error(
-            f"CRITICAL: Mixed subreddit data in actions for {target_subreddit}: {mixed_subreddits}"
-        )
-        raise ValueError(
-            f"Cannot build wiki content - mixed subreddit data detected: {mixed_subreddits}"
-        )
+        logger.error(f"CRITICAL: Mixed subreddit data in actions for {target_subreddit}: {mixed_subreddits}")
+        raise ValueError(f"Cannot build wiki content - mixed subreddit data detected: {mixed_subreddits}")
 
     filtered_actions = []
     for action in actions:
@@ -1215,26 +1041,16 @@ def build_wiki_content(actions: List, config: Dict[str, Any]) -> str:
                         original_moderator, original_reason = prior_removal
 
                         approval_reason = f"Approved {original_moderator} removal"
-                        if (
-                            original_reason
-                            and original_reason.strip()
-                            and original_reason != "-"
-                        ):
+                        if original_reason and original_reason.strip() and original_reason != "-":
                             approval_reason += f": {original_reason.strip()}"
 
                         action.approval_context = approval_reason
-                        logger.debug(
-                            f"Including approval {action.id} - content {content_id} was previously removed by {original_moderator}"
-                        )
+                        logger.debug(f"Including approval {action.id} - content {content_id} was previously removed by {original_moderator}")
                     else:
-                        logger.debug(
-                            f"Excluding approval {action.id} - no prior Reddit/AutoMod removal found for content {content_id}"
-                        )
+                        logger.debug(f"Excluding approval {action.id} - no prior Reddit/AutoMod removal found for content {content_id}")
 
                 except Exception as e:
-                    logger.warning(
-                        f"Error checking prior removals for approval {action.id}: {e}"
-                    )
+                    logger.warning(f"Error checking prior removals for approval {action.id}: {e}")
                     should_include = False
 
             if should_include:
@@ -1278,15 +1094,9 @@ def build_wiki_content(actions: List, config: Dict[str, Any]) -> str:
                 other_actions.append(action)
 
         if removal_action and removal_reason_action:
-            if (
-                hasattr(removal_reason_action, "details")
-                and removal_reason_action.details
-            ):
+            if hasattr(removal_reason_action, "details") and removal_reason_action.details:
                 removal_action.combined_reason = removal_reason_action.details
-            elif (
-                hasattr(removal_reason_action, "mod_note")
-                and removal_reason_action.mod_note
-            ):
+            elif hasattr(removal_reason_action, "mod_note") and removal_reason_action.mod_note:
                 removal_action.combined_reason = removal_reason_action.mod_note
 
             combined_actions.append(removal_action)
@@ -1303,9 +1113,7 @@ def build_wiki_content(actions: List, config: Dict[str, Any]) -> str:
     # Enforce wiki entry limits
     max_entries = get_config_with_default(config, "max_wiki_entries_per_page")
     if len(actions) > max_entries:
-        logger.warning(
-            f"Truncating wiki content to {max_entries} entries (was {len(actions)})"
-        )
+        logger.warning(f"Truncating wiki content to {max_entries} entries (was {len(actions)})")
         actions = actions[:max_entries]
 
     # Group actions by date
@@ -1323,30 +1131,18 @@ def build_wiki_content(actions: List, config: Dict[str, Any]) -> str:
 
     sorted_dates = sorted(actions_by_date.keys(), reverse=True)
     content_parts = [timestamp_header]
-    footer_parts = [
-        "---",
-        "",
-        "*This modlog is automatically maintained by [RedditModLog](https://github.com/bakerboy448/RedditModLog) bot.*",
-    ]
+    footer_parts = ["---", "", "*This modlog is automatically maintained by [RedditModLog](https://github.com/bakerboy448/RedditModLog) bot.*"]
 
     # Build the full content first
     full_content_parts = []
     for date_str in sorted_dates:
         date_parts = [f"## {date_str}"]
-        date_parts.append(
-            "| Time | Action | ID | Moderator | Content | Reason | Inquire |"
-        )
-        date_parts.append(
-            "|------|--------|----|-----------|---------|--------|---------|"
-        )
+        date_parts.append("| Time | Action | ID | Moderator | Content | Reason | Inquire |")
+        date_parts.append("|------|--------|----|-----------|---------|--------|---------|")
 
-        for action in sorted(
-            actions_by_date[date_str], key=lambda x: x.created_utc, reverse=True
-        ):
+        for action in sorted(actions_by_date[date_str], key=lambda x: x.created_utc, reverse=True):
             entry = format_modlog_entry(action, config)
-            date_parts.append(
-                f"| {entry['time']} | {entry['action']} | {entry['id']} | {entry['moderator']} | {entry['content']} | {entry['reason']} | {entry['inquire']} |"
-            )
+            date_parts.append(f"| {entry['time']} | {entry['action']} | {entry['id']} | {entry['moderator']} | {entry['content']} | {entry['reason']} | {entry['inquire']} |")
 
         date_parts.append("")  # Empty line between dates
         full_content_parts.append("\n".join(date_parts))
@@ -1363,18 +1159,12 @@ def build_wiki_content(actions: List, config: Dict[str, Any]) -> str:
         if test_size > WARNING_THRESHOLD:
             skipped_days = len(sorted_dates) - i
             if skipped_days > 0:
-                logger.warning(
-                    f"Wiki approaching size limit - trimming {skipped_days} oldest day(s) of entries"
-                )
+                logger.warning(f"Wiki approaching size limit - trimming {skipped_days} oldest day(s) of entries")
                 logger.warning(f"Excluded dates: {sorted_dates[i:]}")
 
                 # Add a notice about trimmed content
-                content_parts.append(
-                    f"\n**Note:** {skipped_days} older day(s) trimmed due to wiki size limits."
-                )
-                content_parts.append(
-                    f"Only showing entries from {sorted_dates[i - 1] if i > 0 else 'today'} onwards.\n"
-                )
+                content_parts.append(f"\n**Note:** {skipped_days} older day(s) trimmed due to wiki size limits.")
+                content_parts.append(f"Only showing entries from {sorted_dates[i-1] if i > 0 else 'today'} onwards.\n")
             break
 
         content_parts.append(date_content)
@@ -1388,12 +1178,8 @@ def build_wiki_content(actions: List, config: Dict[str, Any]) -> str:
     final_size = len(final_content.encode("utf-8"))
 
     if skipped_days > 0:
-        logger.info(
-            f"Wiki content size after trimming: {final_size:,} bytes ({(final_size / REDDIT_WIKI_LIMIT) * 100:.1f}% of limit)"
-        )
-        logger.info(
-            f"Included {len(included_dates)} days, excluded {skipped_days} days"
-        )
+        logger.info(f"Wiki content size after trimming: {final_size:,} bytes ({(final_size/REDDIT_WIKI_LIMIT)*100:.1f}% of limit)")
+        logger.info(f"Included {len(included_dates)} days, excluded {skipped_days} days")
 
     return final_content
 
@@ -1418,9 +1204,7 @@ def setup_reddit_client(config: Dict[str, Any]):
         raise
 
 
-def update_wiki_page(
-    reddit, subreddit_name: str, wiki_page: str, content: str, force: bool = False
-):
+def update_wiki_page(reddit, subreddit_name: str, wiki_page: str, content: str, force: bool = False):
     """Update wiki page with content, using hash caching to avoid unnecessary updates"""
     try:
         # Reddit wiki page size limit (512 KB)
@@ -1429,26 +1213,16 @@ def update_wiki_page(
         # Check content size
         content_size = len(content.encode("utf-8"))
         if content_size > REDDIT_WIKI_LIMIT:
-            logger.error(
-                f"Wiki content size ({content_size:,} bytes) exceeds Reddit's limit ({REDDIT_WIKI_LIMIT:,} bytes)"
-            )
-            logger.error(
-                f"Content is {content_size - REDDIT_WIKI_LIMIT:,} bytes over the limit"
-            )
-            raise ValueError(
-                f"Wiki content too large: {content_size:,} bytes (limit: {REDDIT_WIKI_LIMIT:,} bytes)"
-            )
+            logger.error(f"Wiki content size ({content_size:,} bytes) exceeds Reddit's limit ({REDDIT_WIKI_LIMIT:,} bytes)")
+            logger.error(f"Content is {content_size - REDDIT_WIKI_LIMIT:,} bytes over the limit")
+            raise ValueError(f"Wiki content too large: {content_size:,} bytes (limit: {REDDIT_WIKI_LIMIT:,} bytes)")
 
         # Check if we're getting close to the limit (warn at 95%)
         warning_threshold = int(REDDIT_WIKI_LIMIT * 0.95)
         if content_size > warning_threshold:
             percent_used = (content_size / REDDIT_WIKI_LIMIT) * 100
-            logger.warning(
-                f"Wiki content size ({content_size:,} bytes) is {percent_used:.1f}% of Reddit's limit"
-            )
-            logger.warning(
-                f"Only {REDDIT_WIKI_LIMIT - content_size:,} bytes remaining before hitting limit"
-            )
+            logger.warning(f"Wiki content size ({content_size:,} bytes) is {percent_used:.1f}% of Reddit's limit")
+            logger.warning(f"Only {REDDIT_WIKI_LIMIT - content_size:,} bytes remaining before hitting limit")
 
         # Calculate content hash
         content_hash = get_content_hash(content)
@@ -1457,13 +1231,9 @@ def update_wiki_page(
         cached_hash = get_cached_wiki_hash(subreddit_name, wiki_page)
         if cached_hash == content_hash:
             if force:
-                logger.info(
-                    f"Wiki content unchanged, but you selected force for /r/{subreddit_name}/wiki/{wiki_page}, forcing update"
-                )
+                logger.info(f"Wiki content unchanged, but you selected force for /r/{subreddit_name}/wiki/{wiki_page}, forcing update")
             else:
-                logger.info(
-                    f"Wiki content unchanged for /r/{subreddit_name}/wiki/{wiki_page}, skipping update"
-                )
+                logger.info(f"Wiki content unchanged for /r/{subreddit_name}/wiki/{wiki_page}, skipping update")
                 return False
 
         # Check existing wiki page size if it exists
@@ -1475,42 +1245,28 @@ def update_wiki_page(
 
             # If new content would make page exceed limit, we need to handle it
             if existing_size > warning_threshold:
-                logger.warning(
-                    f"Existing wiki page already at {existing_size:,} bytes ({(existing_size / REDDIT_WIKI_LIMIT) * 100:.1f}% of limit)"
-                )
+                logger.warning(f"Existing wiki page already at {existing_size:,} bytes ({(existing_size/REDDIT_WIKI_LIMIT)*100:.1f}% of limit)")
 
                 # If we're trying to add more content to an already large page
                 if content_size >= existing_size:
-                    logger.error(
-                        f"Cannot increase wiki size from {existing_size:,} to {content_size:,} bytes - too close to limit"
-                    )
-                    logger.error(
-                        "Consider reducing retention_days or max_wiki_entries_per_page in config"
-                    )
-                    raise ValueError("Wiki page too large to update safely")
+                    logger.error(f"Cannot increase wiki size from {existing_size:,} to {content_size:,} bytes - too close to limit")
+                    logger.error("Consider reducing retention_days or max_wiki_entries_per_page in config")
+                    raise ValueError(f"Wiki page too large to update safely")
         except Exception as e:
             # Wiki page might not exist yet, that's okay
             if "404" not in str(e) and "not found" not in str(e).lower():
                 logger.debug(f"Could not check existing wiki size: {e}")
 
         # Update the wiki page
-        logger.info(
-            f"Attempting to update wiki page with {content_size:,} bytes of content"
-        )
-        subreddit.wiki[wiki_page].edit(
-            content=content, reason="Automated modlog update"
-        )
+        logger.info(f"Attempting to update wiki page with {content_size:,} bytes of content")
+        subreddit.wiki[wiki_page].edit(content=content, reason="Automated modlog update")
 
         # Update the cached hash
         update_cached_wiki_hash(subreddit_name, wiki_page, content_hash)
 
         action_type = "force updated" if force else "updated"
-        logger.info(
-            f"Successfully {action_type} wiki page: /r/{subreddit_name}/wiki/{wiki_page}"
-        )
-        logger.info(
-            f"Final wiki size: {content_size:,} bytes ({(content_size / REDDIT_WIKI_LIMIT) * 100:.1f}% of Reddit's limit)"
-        )
+        logger.info(f"Successfully {action_type} wiki page: /r/{subreddit_name}/wiki/{wiki_page}")
+        logger.info(f"Final wiki size: {content_size:,} bytes ({(content_size/REDDIT_WIKI_LIMIT)*100:.1f}% of Reddit's limit)")
         return True
 
     except praw.exceptions.RedditAPIException as e:
@@ -1519,20 +1275,12 @@ def update_wiki_page(
         for item in e.items:
             error_messages.append(f"{item.error_type}: {item.message}")
 
-        logger.error(
-            f"Reddit API error updating wiki page: {', '.join(error_messages)}"
-        )
+        logger.error(f"Reddit API error updating wiki page: {', '.join(error_messages)}")
 
         # Check if it's a size-related error
-        if any(
-            "too long" in msg.lower() or "size" in msg.lower() for msg in error_messages
-        ):
-            logger.error(
-                f"Wiki content size ({content_size:,} bytes) likely exceeds Reddit's limit"
-            )
-            logger.error(
-                "Try reducing retention_days or max_wiki_entries_per_page in config"
-            )
+        if any("too long" in msg.lower() or "size" in msg.lower() for msg in error_messages):
+            logger.error(f"Wiki content size ({content_size:,} bytes) likely exceeds Reddit's limit")
+            logger.error("Try reducing retention_days or max_wiki_entries_per_page in config")
 
         raise
 
@@ -1541,22 +1289,16 @@ def update_wiki_page(
 
         # Provide more context for common errors
         if "403" in error_str:
-            logger.error(
-                f"403 Forbidden error updating wiki page /r/{subreddit_name}/wiki/{wiki_page}"
-            )
+            logger.error(f"403 Forbidden error updating wiki page /r/{subreddit_name}/wiki/{wiki_page}")
             logger.error("Possible causes:")
-            logger.error(
-                "  1. Wiki page size limit exceeded (current content: {content_size:,} bytes)"
-            )
+            logger.error("  1. Wiki page size limit exceeded (current content: {content_size:,} bytes)")
             logger.error("  2. Bot lacks wiki edit permissions on this subreddit")
             logger.error("  3. Wiki page is locked or restricted")
             logger.error("  4. Rate limiting (too many requests)")
 
             # Check if we're near the size limit
             if content_size > REDDIT_WIKI_LIMIT * 0.95:
-                logger.error(
-                    f"LIKELY CAUSE: Content size ({content_size:,} bytes) is very close to Reddit's limit ({REDDIT_WIKI_LIMIT:,} bytes)"
-                )
+                logger.error(f"LIKELY CAUSE: Content size ({content_size:,} bytes) is very close to Reddit's limit ({REDDIT_WIKI_LIMIT:,} bytes)")
 
             # Try to check existing page size for context
             try:
@@ -1582,9 +1324,7 @@ def process_modlog_actions(reddit, config: Dict[str, Any]) -> List:
     """Fetch and process new modlog actions"""
     try:
         # Validate batch size
-        batch_size = validate_config_value(
-            "batch_size", config.get("batch_size", 50), CONFIG_LIMITS
-        )
+        batch_size = validate_config_value("batch_size", config.get("batch_size", 50), CONFIG_LIMITS)
         if batch_size != config.get("batch_size"):
             config["batch_size"] = batch_size
 
@@ -1600,9 +1340,7 @@ def process_modlog_actions(reddit, config: Dict[str, Any]) -> List:
         wiki_actions = set(config.get("wiki_actions", DEFAULT_WIKI_ACTIONS))
 
         for action in subreddit.mod.log(limit=batch_size):
-            mod_name = get_moderator_name(
-                action, False
-            )  # Use actual name for ignore check
+            mod_name = get_moderator_name(action, False)  # Use actual name for ignore check
             if mod_name and mod_name in ignored_mods:
                 continue
 
@@ -1678,9 +1416,7 @@ def load_env_config() -> Dict[str, Any]:
     # Ignored moderators (comma-separated list)
     ignored_moderators = os.getenv("IGNORED_MODERATORS")
     if ignored_moderators:
-        env_config["ignored_moderators"] = [
-            mod.strip() for mod in ignored_moderators.split(",")
-        ]
+        env_config["ignored_moderators"] = [mod.strip() for mod in ignored_moderators.split(",")]
 
     return env_config
 
@@ -1696,9 +1432,7 @@ def load_config(config_path: str, auto_update: bool = True) -> Dict[str, Any]:
             with open(config_path, "r") as f:
                 original_config = json.load(f)
         except FileNotFoundError:
-            logger.warning(
-                f"Config file not found: {config_path}, using environment variables only"
-            )
+            logger.warning(f"Config file not found: {config_path}, using environment variables only")
             original_config = {}
 
         # Override with environment variables
@@ -1717,9 +1451,7 @@ def load_config(config_path: str, auto_update: bool = True) -> Dict[str, Any]:
         for key, limits in CONFIG_LIMITS.items():
             if key not in config_before:
                 config_updated = True
-                logger.info(
-                    f"Added new configuration field '{key}' with default value: {limits['default']}"
-                )
+                logger.info(f"Added new configuration field '{key}' with default value: {limits['default']}")
 
         # Auto-update config file if new defaults were added and auto_update is enabled
         if config_updated and auto_update:
@@ -1734,17 +1466,13 @@ def load_config(config_path: str, auto_update: bool = True) -> Dict[str, Any]:
                 # Write updated config
                 with open(config_path, "w") as f:
                     json.dump(config, f, indent=2)
-                logger.info(
-                    f"Auto-updated config file '{config_path}' with new defaults"
-                )
+                logger.info(f"Auto-updated config file '{config_path}' with new defaults")
 
             except Exception as e:
                 logger.warning(f"Could not auto-update config file: {e}")
                 logger.info("Configuration will still work with in-memory defaults")
         elif config_updated and not auto_update:
-            logger.info(
-                "Config file updates available but auto-update disabled. Run without --no-auto-update-config to update."
-            )
+            logger.info("Config file updates available but auto-update disabled. Run without --no-auto-update-config to update.")
 
         logger.info("Configuration loaded and validated successfully")
         return config
@@ -1760,64 +1488,23 @@ def load_config(config_path: str, auto_update: bool = True) -> Dict[str, Any]:
 
 def create_argument_parser():
     """Create command line argument parser"""
-    parser = argparse.ArgumentParser(
-        description="Reddit Modlog Wiki Publisher",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-    )
+    parser = argparse.ArgumentParser(description="Reddit Modlog Wiki Publisher", formatter_class=argparse.RawDescriptionHelpFormatter)
 
-    parser.add_argument(
-        "--config", default="config.json", help="Path to configuration file"
-    )
+    parser.add_argument("--config", default="config.json", help="Path to configuration file")
     parser.add_argument("--source-subreddit", help="Source subreddit name")
     parser.add_argument("--wiki-page", default="modlog", help="Wiki page name")
-    parser.add_argument(
-        "--retention-days", type=int, help="Database retention period in days"
-    )
-    parser.add_argument(
-        "--batch-size", type=int, help="Number of entries to fetch per run"
-    )
-    parser.add_argument(
-        "--interval", type=int, help="Update interval in seconds for continuous mode"
-    )
-    parser.add_argument(
-        "--continuous",
-        action="store_true",
-        help="Run continuously with interval updates",
-    )
-    parser.add_argument(
-        "--test", action="store_true", help="Test configuration and Reddit API access"
-    )
+    parser.add_argument("--retention-days", type=int, help="Database retention period in days")
+    parser.add_argument("--batch-size", type=int, help="Number of entries to fetch per run")
+    parser.add_argument("--interval", type=int, help="Update interval in seconds for continuous mode")
+    parser.add_argument("--continuous", action="store_true", help="Run continuously with interval updates")
+    parser.add_argument("--test", action="store_true", help="Test configuration and Reddit API access")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
-    parser.add_argument(
-        "--show-config-limits",
-        action="store_true",
-        help="Show configuration limits and defaults",
-    )
-    parser.add_argument(
-        "--force-migrate",
-        action="store_true",
-        help="Force database migration (use with caution)",
-    )
-    parser.add_argument(
-        "--no-auto-update-config",
-        action="store_true",
-        help="Disable automatic config file updates",
-    )
-    parser.add_argument(
-        "--force-modlog",
-        action="store_true",
-        help="Fetch ALL modlog actions from Reddit API and completely rebuild wiki from database",
-    )
-    parser.add_argument(
-        "--force-wiki",
-        action="store_true",
-        help="Force wiki page update even if content appears unchanged (bypasses hash check)",
-    )
-    parser.add_argument(
-        "--force-all",
-        action="store_true",
-        help="Equivalent to --force-modlog + --force-wiki (complete rebuild and force update)",
-    )
+    parser.add_argument("--show-config-limits", action="store_true", help="Show configuration limits and defaults")
+    parser.add_argument("--force-migrate", action="store_true", help="Force database migration (use with caution)")
+    parser.add_argument("--no-auto-update-config", action="store_true", help="Disable automatic config file updates")
+    parser.add_argument("--force-modlog", action="store_true", help="Fetch ALL modlog actions from Reddit API and completely rebuild wiki from database")
+    parser.add_argument("--force-wiki", action="store_true", help="Force wiki page update even if content appears unchanged (bypasses hash check)")
+    parser.add_argument("--force-all", action="store_true", help="Equivalent to --force-modlog + --force-wiki (complete rebuild and force update)")
 
     return parser
 
@@ -1829,9 +1516,7 @@ def setup_logging(debug: bool = False):
     level = logging.DEBUG if debug else logging.INFO
 
     # Create formatters
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     # Handler for INFO and DEBUG to stdout
     stdout_handler = logging.StreamHandler(sys.stdout)
@@ -1893,33 +1578,19 @@ def run_continuous_mode(reddit, config: Dict[str, Any], force: bool = False):
 
             # Always rebuild wiki from ALL relevant actions in database (within retention period)
             # This matches the behavior of single-run mode
-            all_actions = get_recent_actions_from_db(
-                config, force_all_actions=False, show_only_removals=True
-            )
+            all_actions = get_recent_actions_from_db(config, force_all_actions=False, show_only_removals=True)
             if all_actions:
-                logger.info(
-                    f"Found {len(all_actions)} total actions in database for wiki update"
-                )
+                logger.info(f"Found {len(all_actions)} total actions in database for wiki update")
                 content = build_wiki_content(all_actions, config)
                 wiki_page = config.get("wiki_page", "modlog")
-                update_wiki_page(
-                    reddit,
-                    config["source_subreddit"],
-                    wiki_page,
-                    content,
-                    force=first_run_force,
-                )
+                update_wiki_page(reddit, config["source_subreddit"], wiki_page, content, force=first_run_force)
                 first_run_force = False
             else:
                 logger.warning("No actions found in database for wiki update")
 
             cleanup_old_entries(get_config_with_default(config, "retention_days"))
 
-            interval = validate_config_value(
-                "update_interval",
-                get_config_with_default(config, "update_interval"),
-                CONFIG_LIMITS,
-            )
+            interval = validate_config_value("update_interval", get_config_with_default(config, "update_interval"), CONFIG_LIMITS)
             logger.info(f"Waiting {interval} seconds until next update...")
             time.sleep(interval)
 
@@ -1928,20 +1599,14 @@ def run_continuous_mode(reddit, config: Dict[str, Any], force: bool = False):
             break
         except Exception as e:
             error_count += 1
-            logger.error(
-                f"Error in continuous mode (attempt {error_count}/{max_errors}): {e}"
-            )
+            logger.error(f"Error in continuous mode (attempt {error_count}/{max_errors}): {e}")
 
             if error_count >= max_errors:
-                logger.error(
-                    f"Maximum error count ({max_errors}) reached, shutting down"
-                )
+                logger.error(f"Maximum error count ({max_errors}) reached, shutting down")
                 break
 
             # Exponential backoff for errors
-            wait_time = min(
-                BASE_BACKOFF_WAIT * (2 ** (error_count - 1)), MAX_BACKOFF_WAIT
-            )  # Max 5 minutes
+            wait_time = min(BASE_BACKOFF_WAIT * (2 ** (error_count - 1)), MAX_BACKOFF_WAIT)  # Max 5 minutes
             logger.info(f"Waiting {wait_time} seconds before retry...")
             time.sleep(wait_time)
 
@@ -1998,55 +1663,35 @@ def main():
         if args.force_all:
             args.force_modlog = True
             args.force_wiki = True
-            logger.info(
-                "Force all requested - will fetch from Reddit AND force wiki update"
-            )
+            logger.info("Force all requested - will fetch from Reddit AND force wiki update")
 
         if args.force_modlog:
-            logger.info(
-                "Force modlog requested - fetching ALL modlog actions from Reddit and rebuilding wiki..."
-            )
+            logger.info("Force modlog requested - fetching ALL modlog actions from Reddit and rebuilding wiki...")
             # First, fetch all recent modlog actions to populate database
             logger.info("Fetching all modlog actions from Reddit...")
             process_modlog_actions(reddit, config)
 
             # Then rebuild wiki from database (showing only removal actions)
             logger.info("Rebuilding wiki from database...")
-            actions = get_recent_actions_from_db(
-                config, force_all_actions=False, show_only_removals=True
-            )
+            actions = get_recent_actions_from_db(config, force_all_actions=False, show_only_removals=True)
             if actions:
-                logger.info(
-                    f"Found {len(actions)} removal actions in database for wiki"
-                )
+                logger.info(f"Found {len(actions)} removal actions in database for wiki")
                 content = build_wiki_content(actions, config)
                 wiki_page = config.get("wiki_page", "modlog")
-                update_wiki_page(
-                    reddit,
-                    config["source_subreddit"],
-                    wiki_page,
-                    content,
-                    force=args.force_wiki,
-                )
+                update_wiki_page(reddit, config["source_subreddit"], wiki_page, content, force=args.force_wiki)
             else:
                 logger.warning("No removal actions found in database for wiki refresh")
             return
 
         # Handle force-wiki: rebuild from database without hitting modlog API
         if args.force_wiki and not args.force_modlog:
-            logger.info(
-                "Force wiki requested - rebuilding from database without API calls"
-            )
+            logger.info("Force wiki requested - rebuilding from database without API calls")
             actions = get_recent_actions_from_db(config, force_all_actions=False)
             if actions:
-                logger.info(
-                    f"Found {len(actions)} actions in database for wiki rebuild"
-                )
+                logger.info(f"Found {len(actions)} actions in database for wiki rebuild")
                 content = build_wiki_content(actions, config)
                 wiki_page = config.get("wiki_page", "modlog")
-                update_wiki_page(
-                    reddit, config["source_subreddit"], wiki_page, content, force=True
-                )
+                update_wiki_page(reddit, config["source_subreddit"], wiki_page, content, force=True)
             else:
                 logger.warning("No actions found in database for wiki rebuild")
             return
@@ -2058,22 +1703,12 @@ def main():
             logger.info(f"Processed {len(new_actions)} new modlog actions")
 
         # Always rebuild wiki from ALL relevant actions in database (within retention period)
-        all_actions = get_recent_actions_from_db(
-            config, force_all_actions=False, show_only_removals=True
-        )
+        all_actions = get_recent_actions_from_db(config, force_all_actions=False, show_only_removals=True)
         if all_actions:
-            logger.info(
-                f"Found {len(all_actions)} total actions in database for wiki update"
-            )
+            logger.info(f"Found {len(all_actions)} total actions in database for wiki update")
             content = build_wiki_content(all_actions, config)
             wiki_page = config.get("wiki_page", "modlog")
-            update_wiki_page(
-                reddit,
-                config["source_subreddit"],
-                wiki_page,
-                content,
-                force=args.force_wiki,
-            )
+            update_wiki_page(reddit, config["source_subreddit"], wiki_page, content, force=args.force_wiki)
         else:
             logger.warning("No actions found in database for wiki update")
 
