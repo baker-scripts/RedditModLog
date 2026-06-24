@@ -366,8 +366,15 @@ def setup_database():
 
 
 def get_content_hash(content: str) -> str:
-    """Calculate SHA-256 hash of content"""
-    return hashlib.sha256(content.encode("utf-8")).hexdigest()
+    """Calculate SHA-256 hash of content for wiki change-detection.
+
+    Excludes the volatile ``**Last Updated:** <timestamp>`` header line so an
+    unchanged modlog produces a stable hash. Hashing the timestamped content
+    made every run differ, defeating the wiki_hash_cache skip and rewriting the
+    wiki page (a fresh revision) on every cycle even when nothing changed.
+    """
+    hashable = re.sub(r"^\*\*Last Updated:\*\* .*\n", "", content, count=1)
+    return hashlib.sha256(hashable.encode("utf-8")).hexdigest()
 
 
 def get_cached_wiki_hash(subreddit: str, wiki_page: str) -> Optional[str]:
