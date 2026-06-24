@@ -414,7 +414,12 @@ export function buildContent(
  * Ported from `get_content_hash` (Python used hashlib.sha256 hexdigest).
  */
 export async function contentHash(markdown: string): Promise<string> {
-  const data = new TextEncoder().encode(markdown);
+  // Exclude the volatile "**Last Updated:** <timestamp>" header line so an
+  // unchanged modlog hashes stably (INV-6). Hashing the timestamped content
+  // would differ every run, defeating the skip and rewriting the wiki each
+  // cycle. Mirrors the Python get_content_hash fix.
+  const hashable = markdown.replace(/^\*\*Last Updated:\*\* .*\r?\n/, '');
+  const data = new TextEncoder().encode(hashable);
   // crypto.subtle is available globally in the Devvit serverless runtime.
   const digest = await crypto.subtle.digest('SHA-256', data);
   return [...new Uint8Array(digest)]

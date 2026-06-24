@@ -141,10 +141,11 @@ export function extractRecord(action: ModAction, cfg: AppConfig): ModRecord | nu
   }
 
   // INV-8 — drop actions performed by ignored moderators (e.g. AutoModerator).
-  // Compare on the RAW name before anonymization so the ignore list stays
-  // meaningful.
-  const rawModerator = (action.moderatorName ?? '').trim();
-  if (rawModerator.length > 0 && cfg.ignoredModerators.includes(rawModerator)) {
+  // Case-insensitive: Reddit usernames match case-insensitively, and the ignore
+  // list (default + per-install) may carry mixed case. Comparing raw case would
+  // silently leak ignored mods into the public wiki.
+  const rawModerator = (action.moderatorName ?? '').trim().toLowerCase();
+  if (rawModerator.length > 0 && cfg.ignoredModerators.some((m) => m.toLowerCase() === rawModerator)) {
     return null;
   }
 
