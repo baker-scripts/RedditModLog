@@ -1,5 +1,7 @@
 language: en-US
 reviews:
+  auto_review:
+    enabled: false
   profile: assertive
   request_changes_workflow: true
   high_level_summary: true
