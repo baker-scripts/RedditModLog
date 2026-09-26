@@ -19,7 +19,7 @@
     "@devvit/public-api": "0.13.5"
   },
   "devDependencies": {
-    "devvit": "0.13.5",
+    "devvit": "1.0.0",
     "typescript": "5.8.3",
     "vitest": "4.1.11"
   }
