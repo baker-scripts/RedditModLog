@@ -16,7 +16,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@devvit/public-api": "0.13.5"
+    "@devvit/public-api": "0.14.7"
   },
   "devDependencies": {
     "devvit": "1.0.0",
