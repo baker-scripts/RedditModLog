@@ -17,6 +17,9 @@
     "dependencies",
     "renovate"
   ],
+  "registryAliases": {
+    "mirror.gcr.io/library": "docker.io/library"
+  },
   "rangeStrategy": "bump",
   "separateMajorMinor": true,
   "separateMinorPatch": false,
