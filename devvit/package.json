@@ -24,6 +24,6 @@
     "vitest": "4.1.11"
   },
   "overrides": {
-    "protobufjs": "^7.6.6"
+    "protobufjs": "^8.8.0"
   }
 }
