@@ -1,0 +1,115 @@
+{
+  "base": 1790856000,
+  "subreddit": "OpenSignups",
+  "entries": [
+    {
+      "id": "ModAction_e01",
+      "type": "approvecomment",
+      "moderatorName": "HumanAlpha",
+      "ageSec": 600,
+      "target": { "id": "t1_kc0m003", "author": "poster03", "permalink": "/r/OpenSignups/comments/1abc333/post_three/kc0m003/" }
+    },
+    {
+      "id": "ModAction_e02",
+      "type": "addremovalreason",
+      "moderatorName": "HumanBravo",
+      "ageSec": 1200,
+      "description": "Rule 2: no spam. Email mods@example.com | thanks 🚫",
+      "details": "Spam",
+      "target": { "id": "t1_kc0m001", "author": "poster01", "permalink": "/r/OpenSignups/comments/1abc111/post_one/kc0m001/" }
+    },
+    {
+      "id": "ModAction_e03",
+      "type": "removecomment",
+      "moderatorName": "HumanBravo",
+      "ageSec": 1500,
+      "details": "",
+      "target": { "id": "t1_kc0m001", "author": "poster01", "permalink": "/r/OpenSignups/comments/1abc111/post_one/kc0m001/" }
+    },
+    {
+      "id": "ModAction_e04",
+      "type": "approvelink",
+      "moderatorName": "HumanAlpha",
+      "ageSec": 1800,
+      "target": { "id": "t3_1abc444", "author": "spammer01", "permalink": "/r/OpenSignups/comments/1abc444/free_invites/" }
+    },
+    {
+      "id": "ModAction_e05",
+      "type": "removecomment",
+      "moderatorName": "AutoModerator",
+      "ageSec": 3000,
+      "details": "Low karma filter",
+      "target": { "id": "t1_kc0m003", "author": "poster03", "permalink": "/r/OpenSignups/comments/1abc333/post_three/kc0m003/" }
+    },
+    {
+      "id": "ModAction_e06",
+      "type": "approvecomment",
+      "moderatorName": "HumanAlpha",
+      "ageSec": 3600,
+      "target": { "id": "t1_kc0m009", "author": "poster09", "permalink": "/r/OpenSignups/comments/1abc999/post_nine/kc0m009/" }
+    },
+    {
+      "id": "ModAction_e07",
+      "type": "banuser",
+      "moderatorName": "HumanAlpha",
+      "ageSec": 4000,
+      "details": "permanent",
+      "target": { "id": "t2_spammer", "author": "spammer01", "permalink": "/u/spammer01/" }
+    },
+    {
+      "id": "ModAction_e08",
+      "type": "spamlink",
+      "moderatorName": "reddit",
+      "ageSec": 50000,
+      "details": "spam",
+      "target": { "id": "t3_1abc444", "author": "spammer01", "permalink": "/r/OpenSignups/comments/1abc444/free_invites/" }
+    },
+    {
+      "id": "ModAction_e09",
+      "type": "removelink",
+      "moderatorName": "HumanCharlie",
+      "ageSec": 52000,
+      "target": { "id": "t3_1abc555", "author": "", "permalink": "/r/OpenSignups/comments/1abc555/deleted_post/" }
+    },
+    {
+      "id": "ModAction_e10",
+      "type": "removelink",
+      "moderatorName": "AutoModerator",
+      "ageSec": 60000,
+      "details": "Title | pipe test",
+      "target": { "id": "t3_1abc666", "author": "poster06", "permalink": "/r/OpenSignups/comments/1abc666/pipe_post/" }
+    },
+    {
+      "id": "ModAction_e11",
+      "type": "spamlink",
+      "moderatorName": "AutoModerator",
+      "ageSec": 61000,
+      "details": "repost",
+      "target": { "id": "t3_1abc666", "author": "poster06", "permalink": "/r/OpenSignups/comments/1abc666/pipe_post/" }
+    },
+    {
+      "id": "ModAction_e12",
+      "type": "addremovalreason",
+      "moderatorName": "HumanBravo",
+      "ageSec": 100000,
+      "description": "Rule 5",
+      "target": { "id": "t3_1abc777", "author": "poster07", "permalink": "/r/OpenSignups/comments/1abc777/rule_five/" }
+    },
+    {
+      "id": "ModAction_e13",
+      "type": "removecomment",
+      "moderatorName": "HumanAlpha",
+      "ageSec": 101000,
+      "details": "Rule 1: civility",
+      "target": { "id": "t1_kc0m010", "author": "poster10", "permalink": "/r/OpenSignups/comments/1abc777/rule_five/kc0m010/" }
+    },
+    {
+      "id": "ModAction_e14",
+      "type": "removelink",
+      "moderatorName": "HumanAlpha",
+      "ageSec": 8640000,
+      "details": "too old to show",
+      "target": { "id": "t3_1abcold", "author": "poster99", "permalink": "/r/OpenSignups/comments/1abcold/old_post/" }
+    }
+  ]
+}

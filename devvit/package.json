@@ -1,29 +1,33 @@
 {
   "private": true,
   "name": "redditmodlog-devvit",
-  "version": "0.0.1",
-  "license": "BSD-3-Clause",
+  "version": "0.1.0",
+  "license": "GPL-3.0",
   "type": "module",
-  "description": "Publishes a subreddit's moderation log to a wiki page (Reddit Devvit app).",
-  "main": "src/main.ts",
+  "description": "Publishes a subreddit's moderation log to a wiki page (Reddit Devvit Web app).",
   "scripts": {
-    "deploy": "devvit upload",
+    "build": "vite build",
     "dev": "devvit playtest",
-    "playtest": "devvit playtest",
+    "deploy": "npm run type-check && npm test && devvit upload",
     "login": "devvit login",
-    "launch": "devvit publish",
     "type-check": "tsc --build",
     "test": "vitest run"
   },
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "dependencies": {
-    "@devvit/public-api": "0.13.5"
+    "@devvit/start": "0.14.8",
+    "@devvit/web": "0.14.8",
+    "@hono/node-server": "2.1.4",
+    "devvit": "0.14.8",
+    "hono": "4.13.13"
   },
   "devDependencies": {
-    "devvit": "1.0.0",
-    "typescript": "5.9.3",
+    "@devvit/test": "0.14.8",
+    "@types/node": "24.19.2",
+    "typescript": "6.0.3",
+    "vite": "8.3.3",
     "vitest": "4.1.11"
-  },
-  "overrides": {
-    "protobufjs": "^7.6.6"
   }
 }

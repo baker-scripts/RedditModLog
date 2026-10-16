@@ -1,142 +1,61 @@
-# RedditModLog (Devvit)
+# autowikimod (RedditModLog on Devvit Web)
 
-A [Reddit Devvit](https://developers.reddit.com) app that publishes a
-subreddit's **moderation log** to a subreddit **wiki page** as markdown tables,
-each row carrying a prefilled "removal inquiry" modmail link.
+Reddit Developer Platform port of [`../modlog_wiki_publisher.py`](../modlog_wiki_publisher.py).
+Each install reads its subreddit's moderation log every 20 minutes and writes it
+to a wiki page as daily markdown tables with a prefilled modmail inquiry link per
+row. Reddit hosts and authenticates it: no bot password, no daemon, no SQLite.
 
-This is the Devvit port of the legacy self-hosted Python/PRAW daemon
-(`../modlog_wiki_publisher.py`). It runs entirely on Reddit's Developer Platform
-(serverless TypeScript/Node) — **no server, no database, no credentials to
-manage**. Reddit OAuth, scheduling, and storage are provided by the platform.
+## Layout
 
-> Anonymization is mandatory and non-configurable. Real moderator names are
-> never published; user profiles are never linked. These are hard invariants
-> (see [Parity & invariants](#parity--invariants)).
+| Path | Purpose |
+| --- | --- |
+| `devvit.json` | App manifest: server bundle, Redis + Reddit permissions, cron task, menu items, settings |
+| `src/server/index.ts` | Hono server: `/internal/cron/*`, `/internal/menu/*`, `/internal/settings/*` |
+| `src/server/reddit.ts` | Mod log and wiki calls through `reddit` from `@devvit/web/server` |
+| `src/core/record.ts` | Mod-log entry to stored row (Python `store_processed_action`) |
+| `src/core/render.ts` | Page renderer (Python `build_wiki_content`), FR-7 merging, FR-8 approval gating |
+| `src/core/store.ts` | Redis layout (hashes and sorted sets only) |
+| `src/core/publish.ts` | One cycle: ingest, render, hash-skip, size guard, write, prune |
+| `src/core/settings.ts` | Setting validators and config loader |
+| `test/` | Vitest + `@devvit/test`; `test/parity/` holds the Python golden comparison |
 
----
+## Behaviour
 
-## How it works
+- Cron `*/20 * * * *` fetches up to 500 mod-log entries, stores new ones, rebuilds the page from storage and writes it only when the content hash (minus the timestamp line) changed.
+- Rows match the Python output: human moderators show as `HumanModerator`, AutoModerator removals show as `filter-<action>`, links point only at posts and comments, emails in reasons become `[EMAIL]`, pipes become spaces.
+- FR-7: a removal and its `addremovalreason` on the same target render as one row carrying the reason.
+- FR-8: an approval is shown only when it reverses a Reddit or AutoModerator removal of the same post or comment. The latest such removal per target is kept in the `prior` Redis hash.
+- Pages are trimmed oldest day first at 90% of Reddit's 512 KiB limit.
 
-```
- Reddit mod log ──getModerationLog──▶ modlog.ingest ──▶ Redis (dedup + records)
-                                                              │
- scheduler cron (every 10 min) ──▶ wiki.publishFromStore ◀────┘
-                                          │
-                                   render.buildContent (markdown, capped)
-                                          │
-                                   reddit.create/updateWikiPage (hash-skipped)
-```
+## Settings (per subreddit)
 
-- **Scheduler job** (`publish-modlog`, cron `*/10 * * * *`) runs the full cycle:
-  ingest new actions → render → publish (skipped if unchanged) → prune old
-  records past the retention window.
-- **`ModAction` trigger** does a cheap incremental ingest on each moderation
-  action so removals are captured promptly; the actual wiki write is coalesced
-  into the next cron run (no write-per-action churn).
-- **Menu items** (moderator-only): *Mod Log: Publish now* and *Mod Log: Show
-  status*.
+| Setting | Default | Notes |
+| --- | --- | --- |
+| Wiki page name | `modlog-devvit` | `config/*`, `automoderator`, `usernotes`, `toolbox` are refused |
+| Days shown on the wiki page | 90 | 1-365, capped at days kept |
+| Days of history kept | 90 | 1-365 |
+| Actions shown on the wiki page | removals, spam, `addremovalreason`, approvals | Python `DEFAULT_WIKI_ACTIONS` |
+| Anonymize moderators | on | Cannot be turned off, as in the Python app |
+| Ignored moderators | empty | Comma-separated; their actions are never stored |
 
-### Module map (`src/`)
+## Menu (subreddit menu, moderators only)
 
-| File | Responsibility |
-|---|---|
-| `types.ts` | Shared types + frozen constants (single source of truth). No I/O. |
-| `storage.ts` | Redis data-access (Repository pattern). The only Redis module. |
-| `modlog.ts` | Fetch + filter + extract `ModAction` → `ModRecord` (anonymize, dedup). |
-| `render.ts` | **Pure** markdown builder: tables, links, censor, byte-cap, hash. |
-| `wiki.ts` | Read/create/update wiki page + hash-skip orchestration. |
-| `settings.ts` | Settings schema + validation → frozen `AppConfig`. |
-| `menu.ts` | Moderator menu actions (publish now / show status). |
-| `main.ts` | Entrypoint: `Devvit.configure` + all capability registrations. |
+- **Modlog: Publish now**: same as one cron run.
+- **Modlog: Force rebuild**: rewrite the page from storage without fetching (Python `--force-wiki`).
+- **Modlog: Test connection**: checks settings, mod-log read, wiki page and storage, shown in a toast.
 
----
-
-## Develop & deploy
-
-Prerequisites: Node 18+, a Reddit account enrolled in the Developer Platform,
-and the Devvit CLI (installed as a dev dependency here, or globally via
-`npm i -g devvit`).
+## Develop
 
 ```bash
-cd devvit
-npm install
-
-# One-time: authenticate the CLI with your Reddit account.
-npm run login          # devvit login
-
-# Type-check.
-npm run type-check     # tsc --build
-
-# Playtest on a TEST subreddit you moderate (live install, hot-reload).
-npm run playtest       # devvit playtest <your-test-subreddit>
-
-# Upload a new version to Reddit (private, installable on subs you mod).
-npm run deploy         # devvit upload
-
-# Submit for review to make it publicly installable (requires app review).
-npm run launch         # devvit publish
+npm ci
+npm run type-check
+npm test
+npm run build
 ```
 
-> `devvit playtest` and `devvit upload` install/run the app on a subreddit you
-> moderate. Use a throwaway test subreddit first. Publishing to the public app
-> directory requires Reddit's app-review process.
+Regenerate the Python golden after changing the fixture or the Python renderer:
 
-### App name
-
-`devvit.yaml` sets `name: redditmodlog`. This name is **globally unique** and is
-claimed on first `devvit upload`. If it's taken, change it in `devvit.yaml`
-before the first upload (renaming after publish is disruptive).
-
----
-
-## Configuration (per-install settings)
-
-Configured per subreddit on the app's install **Settings** page. The 19 legacy
-Python options collapse to **6 settings** (Devvit owns OAuth, scheduling, and
-storage; one option is hardcoded; the rest are obsolete on-platform).
-
-| Setting | Default | Range | Legacy option |
-|---|---|---|---|
-| Wiki page name | `modlog` | slug | `wiki_page` |
-| Action types to publish | the 7 below | multi-select | `wiki_actions` |
-| Additional ignored moderators | *(none)* | CSV usernames | `ignored_moderators` |
-| Retention (days) | `90` | 1–365 | `retention_days` |
-| Max entries on page | `1000` | 100–2000 | `max_wiki_entries_per_page` |
-| Mod-log fetch per run | `500` | 50–1000 | `batch_size` |
-
-Default tracked actions (INV-7): `removelink`, `removecomment`, `spamlink`,
-`spamcomment`, `addremovalreason`, `approvelink`, `approvecomment`.
-
-`AutoModerator` is **always** excluded (INV-8); the CSV setting only *adds* to
-that list.
-
----
-
-## Parity & invariants
-
-These rules are carried verbatim from the Python app and enforced in code:
-
-| # | Invariant | Where enforced |
-|---|---|---|
-| INV-1 | **Anonymize moderators ALWAYS** — human mods → `HumanModerator`; `AutoModerator`/`Reddit` kept literal. No toggle. | `modlog.anonymizeMod` (at ingest) |
-| INV-2 | **Never link user profiles** — only post/comment permalinks become hyperlinks. | `modlog.extractRecord` + `render.contentLink` |
-| INV-3 | **512 KB wiki cap** — content trimmed oldest-day-first to ≤90% of cap. | `render.enforceByteCap` (+ `wiki` guard) |
-| INV-4 | **Email censor + pipe-escape** on all free text. | `render.censorEmail` / `escapePipes` |
-| INV-5 | **Dedup by `ModAction.id`** — each action processed once. | `storage.markSeen` (atomic NX) |
-| INV-6 | **Wiki hash-skip** — never write unchanged content (SHA-256). | `wiki.publish` + `storage.getWikiHash` |
-| INV-7 | **Default tracked actions** (7 types). | `types.DEFAULT_WIKI_ACTIONS` |
-| INV-8 | **Default ignored mods** = `[AutoModerator]`. | `types.DEFAULT_IGNORED_MODS` + `settings` |
-| INV-9 | **One install == one subreddit** — Redis is install-scoped; no cross-sub mixing. | platform + `storage` key layout |
-
-### What changed from the Python app
-
-- **Auth**: password-grant OAuth → platform-managed (no credentials).
-- **Storage**: SQLite (schema v5) → Redis KV (dedup hash, records hash,
-  time-sorted set, wiki-hash cache).
-- **Loop**: continuous daemon (`update_interval`) → scheduler cron +
-  `ModAction` trigger.
-- **Config**: CLI/env/JSON (19 opts) → 6 install settings + 1 hardcoded.
-- **Multi-subreddit**: one shared store → one install per subreddit (isolation
-  is structural).
-
-See `../devvit-migration/docs/STATUS.md` for the full scaffolded-vs-TODO matrix.
+```bash
+uv run --no-project --python 3.13 --with praw==8.0.3 \
+  python -I test/parity/python_render.py test/parity/fixture.json .. > test/parity/golden.md
+```
