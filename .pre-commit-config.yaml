@@ -7,7 +7,9 @@ repos:
         files: \.json$
       - id: check-merge-conflict
       - id: end-of-file-fixer
+        exclude: ^devvit/test/parity/golden\.md$
       - id: trailing-whitespace
+        exclude: ^devvit/test/parity/golden\.md$
       - id: no-commit-to-branch
         args: ['--branch', 'main']
       - id: check-added-large-files

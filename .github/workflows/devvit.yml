@@ -1,0 +1,63 @@
+---
+name: Devvit app
+
+"on":
+  push:
+    branches: [main]
+    paths:
+      - 'devvit/**'
+      - 'modlog_wiki_publisher.py'
+      - '.github/workflows/devvit.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'devvit/**'
+      - 'modlog_wiki_publisher.py'
+      - '.github/workflows/devvit.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: [self-hosted, Linux, X64, hetzner]
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: devvit
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: devvit/.nvmrc
+          cache: npm
+          cache-dependency-path: devvit/package-lock.json
+
+      - name: Install
+        run: npm ci --no-fund --no-audit
+
+      - name: Type-check
+        run: npm run type-check
+
+      - name: Test
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+
+      - name: Python parity golden is current
+        run: |
+          uv run --no-project --python 3.13 --with praw==8.0.3 \
+            python -I test/parity/python_render.py test/parity/fixture.json "$GITHUB_WORKSPACE" > "$RUNNER_TEMP/golden.md"
+          diff -u test/parity/golden.md "$RUNNER_TEMP/golden.md"
