@@ -4,7 +4,7 @@
 
 Automatically publishes Reddit moderation logs to a subreddit wiki page with modmail inquiry links.
 
-> **🧪 Devvit migration in progress.** A re-platform of this bot to a Reddit-hosted [Devvit](https://developers.reddit.com/) app (no self-hosting, no bot password, no SQLite) is being scaffolded under [`devvit/`](devvit/) with requirements, research, and architecture docs in [`devvit-migration/docs/`](devvit-migration/). The Python app documented below remains the supported version. See [`devvit-migration/README.md`](devvit-migration/README.md) for status.
+> **🧪 Devvit migration in progress.** A re-platform of this bot to a Reddit-hosted [Devvit](https://developers.reddit.com/) app (no self-hosting, no bot password, no SQLite) lives under [`devvit/`](devvit/) as the Devvit Web app `autowikimod`, with design docs in [`devvit-migration/docs/`](devvit-migration/). The Python app documented below remains the supported version. See [`devvit-migration/README.md`](devvit-migration/README.md) for status.
 
 ## Features
 
