@@ -1,0 +1,283 @@
+{
+  "$schema": "https://developers.reddit.com/schema/config-file.v1.json",
+  "name": "autowikimod",
+  "server": {
+    "dir": "dist/server",
+    "entry": "index.cjs"
+  },
+  "permissions": {
+    "reddit": true,
+    "redis": true
+  },
+  "scheduler": {
+    "tasks": {
+      "publish-modlog": {
+        "endpoint": "/internal/cron/publish",
+        "cron": "*/20 * * * *"
+      }
+    }
+  },
+  "menu": {
+    "items": [
+      {
+        "label": "Modlog: Publish now",
+        "description": "Fetch new mod-log entries and update the wiki page.",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/publish-now"
+      },
+      {
+        "label": "Modlog: Force rebuild",
+        "description": "Rewrite the wiki page from stored entries, even if unchanged.",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/force-rebuild"
+      },
+      {
+        "label": "Modlog: Test connection",
+        "description": "Check settings, mod-log access, wiki page and storage.",
+        "location": "subreddit",
+        "forUserType": "moderator",
+        "endpoint": "/internal/menu/test-connection"
+      }
+    ]
+  },
+  "settings": {
+    "subreddit": {
+      "wikiPage": {
+        "type": "string",
+        "label": "Wiki page name",
+        "helpText": "Page the modlog is written to, e.g. modlog.",
+        "defaultValue": "modlog-devvit",
+        "validationEndpoint": "/internal/settings/validate-wiki-page"
+      },
+      "displayDays": {
+        "type": "number",
+        "label": "Days shown on the wiki page",
+        "helpText": "1-365. Capped at the retention days.",
+        "defaultValue": 90,
+        "validationEndpoint": "/internal/settings/validate-days"
+      },
+      "retentionDays": {
+        "type": "number",
+        "label": "Days of history kept",
+        "helpText": "1-365. Older entries are deleted from app storage.",
+        "defaultValue": 90,
+        "validationEndpoint": "/internal/settings/validate-days"
+      },
+      "wikiActions": {
+        "type": "multiSelect",
+        "label": "Actions shown on the wiki page",
+        "options": [
+          {
+            "label": "removelink",
+            "value": "removelink"
+          },
+          {
+            "label": "removecomment",
+            "value": "removecomment"
+          },
+          {
+            "label": "spamlink",
+            "value": "spamlink"
+          },
+          {
+            "label": "spamcomment",
+            "value": "spamcomment"
+          },
+          {
+            "label": "approvelink",
+            "value": "approvelink"
+          },
+          {
+            "label": "approvecomment",
+            "value": "approvecomment"
+          },
+          {
+            "label": "addremovalreason",
+            "value": "addremovalreason"
+          },
+          {
+            "label": "addnote",
+            "value": "addnote"
+          },
+          {
+            "label": "deletenote",
+            "value": "deletenote"
+          },
+          {
+            "label": "banuser",
+            "value": "banuser"
+          },
+          {
+            "label": "unbanuser",
+            "value": "unbanuser"
+          },
+          {
+            "label": "muteuser",
+            "value": "muteuser"
+          },
+          {
+            "label": "unmuteuser",
+            "value": "unmuteuser"
+          },
+          {
+            "label": "invitemoderator",
+            "value": "invitemoderator"
+          },
+          {
+            "label": "acceptmoderatorinvite",
+            "value": "acceptmoderatorinvite"
+          },
+          {
+            "label": "distinguish",
+            "value": "distinguish"
+          },
+          {
+            "label": "undistinguish",
+            "value": "undistinguish"
+          },
+          {
+            "label": "sticky",
+            "value": "sticky"
+          },
+          {
+            "label": "unsticky",
+            "value": "unsticky"
+          },
+          {
+            "label": "lock",
+            "value": "lock"
+          },
+          {
+            "label": "unlock",
+            "value": "unlock"
+          },
+          {
+            "label": "marknsfw",
+            "value": "marknsfw"
+          },
+          {
+            "label": "unmarknsfw",
+            "value": "unmarknsfw"
+          },
+          {
+            "label": "wikirevise",
+            "value": "wikirevise"
+          },
+          {
+            "label": "wikipagelisted",
+            "value": "wikipagelisted"
+          },
+          {
+            "label": "wikipermlevel",
+            "value": "wikipermlevel"
+          },
+          {
+            "label": "wikibanned",
+            "value": "wikibanned"
+          },
+          {
+            "label": "wikicontributor",
+            "value": "wikicontributor"
+          },
+          {
+            "label": "editsettings",
+            "value": "editsettings"
+          },
+          {
+            "label": "editflair",
+            "value": "editflair"
+          },
+          {
+            "label": "createrule",
+            "value": "createrule"
+          },
+          {
+            "label": "editrule",
+            "value": "editrule"
+          },
+          {
+            "label": "deleterule",
+            "value": "deleterule"
+          },
+          {
+            "label": "reorderrules",
+            "value": "reorderrules"
+          },
+          {
+            "label": "ignorereports",
+            "value": "ignorereports"
+          },
+          {
+            "label": "unignorereports",
+            "value": "unignorereports"
+          },
+          {
+            "label": "request_assistance",
+            "value": "request_assistance"
+          },
+          {
+            "label": "community_widgets",
+            "value": "community_widgets"
+          },
+          {
+            "label": "community_welcome_page",
+            "value": "community_welcome_page"
+          },
+          {
+            "label": "edit_post_requirements",
+            "value": "edit_post_requirements"
+          },
+          {
+            "label": "edit_comment_requirements",
+            "value": "edit_comment_requirements"
+          },
+          {
+            "label": "edit_saved_response",
+            "value": "edit_saved_response"
+          },
+          {
+            "label": "addtocollection",
+            "value": "addtocollection"
+          },
+          {
+            "label": "removefromcollection",
+            "value": "removefromcollection"
+          }
+        ],
+        "defaultValue": [
+          "removelink",
+          "removecomment",
+          "spamlink",
+          "spamcomment",
+          "addremovalreason",
+          "approvelink",
+          "approvecomment"
+        ],
+        "validationEndpoint": "/internal/settings/validate-actions"
+      },
+      "anonymizeModerators": {
+        "type": "boolean",
+        "label": "Anonymize moderators",
+        "helpText": "Human moderators show as HumanModerator. Required; cannot be turned off.",
+        "defaultValue": true,
+        "validationEndpoint": "/internal/settings/validate-anonymize"
+      },
+      "ignoredModerators": {
+        "type": "string",
+        "label": "Ignored moderators",
+        "helpText": "Comma-separated usernames whose actions are never logged, e.g. AutoModerator.",
+        "defaultValue": "",
+        "validationEndpoint": "/internal/settings/validate-ignored"
+      }
+    }
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch"
+  },
+  "dev": {
+    "subreddit": "autowikimod_dev"
+  }
+}
