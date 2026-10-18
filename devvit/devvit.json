@@ -276,5 +276,8 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite build --watch"
+  },
+  "dev": {
+    "subreddit": "autowikimod_dev"
   }
 }

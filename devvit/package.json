@@ -1,8 +1,8 @@
 {
   "private": true,
-  "name": "redditmodlog-devvit",
-  "version": "0.1.0",
-  "license": "GPL-3.0",
+  "name": "autowikimod",
+  "version": "0.0.0",
+  "license": "BSD-3-Clause",
   "type": "module",
   "description": "Publishes a subreddit's moderation log to a wiki page (Reddit Devvit Web app).",
   "scripts": {
