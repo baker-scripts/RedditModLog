@@ -27,7 +27,7 @@
     "@devvit/test": "0.14.8",
     "@types/node": "24.19.2",
     "typescript": "6.0.3",
-    "vite": "8.3.3",
+    "vite": "8.3.4",
     "vitest": "4.1.11"
   }
 }
