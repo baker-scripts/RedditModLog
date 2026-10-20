@@ -2,8 +2,8 @@
 
 | Field | Value |
 | --- | --- |
-| Status | Ported to Devvit Web. Type-check, unit tests, build and Python parity pass offline. Not yet uploaded or playtested. |
-| Date | 2026-10-15 |
+| Status | Supported runtime. 0.0.3 published unlisted and installed on r/OpenSignups (page `modlog-devvit`). The Python container is being retired at cutover; its wiki page was archived to `modlog-archive` first. |
+| Date | 2026-10-20 |
 | Branch | `feat/devvit-web` |
 | App name | `autowikimod` (`devvit/devvit.json`) |
 | Code root | `devvit/` (`@devvit/web` 0.14.8, Hono server, `@devvit/start` vite build to `dist/server/index.cjs`) |
@@ -40,7 +40,23 @@
 | Action list | stored but not used for the page (`show_only_removals=True`) | drives the page filter | Same output at the default list. |
 | Fetch size | 50 per 10 min | 500 per 20 min | Fewer, larger runs; dedup makes overlap harmless. |
 
-## Needs a live playtest
+## Live run on r/OpenSignups
+
+| Check | Result |
+| --- | --- |
+| Install | 0.0.3 installed 2026-10-18; first write to `modlog-devvit` at 03:20 UTC (204 rows, 500 actions). |
+| Side-by-side with Python `modlog` | One overlap, 2026-10-18 03:20-03:42 UTC. Shared window from 2026-09-05: 190 of 196 rows identical. 3 differ by a since-deleted author name, and 3 by an approval reason that Python's `LIKE` match took from another target. |
+| Cron | 7 revisions by `autowikimod` from 2026-10-18 to 2026-10-19; each new qualifying action is on the page. |
+| FR-8 | Approvals with no prior Reddit/AutoModerator removal are left out, as in Python. |
+| History | The first run reads the last 500 mod-log entries only, so the page starts at 2026-09-05. The Python page went back to 2026-07-15. |
+
+## Production cutover (open)
+
+1. In the r/OpenSignups app settings, set the wiki page to `modlog` and days kept to 365.
+2. Run "Publish now" from the subreddit menu and check the `modlog` page revision author is `autowikimod`.
+3. Keep `modlog-devvit` as an archive, or delete it.
+
+## Needs a live playtest (items 1-4 and 7 now pass on r/OpenSignups)
 
 Typed and unit-tested offline, but not yet run on Reddit:
 
