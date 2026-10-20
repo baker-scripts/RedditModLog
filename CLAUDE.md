@@ -2,7 +2,9 @@
 
 Automated Reddit moderation log publisher — writes mod actions to a subreddit wiki page on a schedule.
 
-## Stack
+The supported runtime is the Devvit Web app `autowikimod` in `devvit/` (TypeScript, Redis, cron). The Python bot below is deprecated: critical fixes only, no new features. `modlog_wiki_publisher.py` stays as the parity reference for `devvit/test/parity/`, so do not delete it.
+
+## Stack (deprecated Python bot)
 - Python 3.11 / PRAW (Reddit API)
 - SQLite (deduplication and retention)
 - Docker with s6-overlay (deployment)

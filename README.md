@@ -7,7 +7,7 @@
 
 Publishes a subreddit's moderation log to a wiki page as daily markdown tables. Each row links to the post or comment (never a user profile), shows the removal reason text, and carries a prefilled modmail inquiry link. A SQLite database handles deduplication and retention, and one database can serve several subreddits.
 
-A Reddit-hosted port, `autowikimod`, is in progress under [`devvit/`](devvit/) (no self-hosting, bot password, or SQLite). Status is in [`devvit-migration/README.md`](devvit-migration/README.md). The Python app below is the supported version.
+> **Deprecated.** The supported runtime is now the Reddit-hosted [Devvit](https://developers.reddit.com/) app `autowikimod` in [`devvit/`](devvit/). It needs no self-hosting, no bot password and no SQLite. Install it from the Devvit app directory and set the wiki page in the app's subreddit settings. The Python bot documented below gets no new features and only critical fixes. It depends on password-grant Data API access, which Reddit is closing for unregistered scripts. See [`devvit/README.md`](devvit/README.md) and [`devvit-migration/docs/STATUS.md`](devvit-migration/docs/STATUS.md).
 
 ## Quick start (Docker)
 
