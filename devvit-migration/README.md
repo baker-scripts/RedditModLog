@@ -25,4 +25,4 @@ Re-platforming the Python/PRAW **Reddit Modlog Wiki Publisher** into a **Devvit*
 
 ## Status
 
-`autowikimod` is the supported runtime. Version 0.0.3 is published (unlisted) and has run on r/OpenSignups since 2026-10-18. The Python container was retired the same day. See [`docs/STATUS.md`](docs/STATUS.md). `docs/01..04` describe the earlier classic-model design.
+`autowikimod` is the supported runtime. Version 0.0.3 is published (unlisted) and has run on r/OpenSignups since 2026-10-18. The Python bot still runs side by side and is retired at cutover. See [`docs/STATUS.md`](docs/STATUS.md). `docs/01..04` describe the earlier classic-model design.
