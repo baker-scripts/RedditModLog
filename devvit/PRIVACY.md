@@ -7,9 +7,9 @@ autowikimod is not an official Reddit product. It runs on Reddit's Developer Pla
 ## Summary
 
 - The app copies mod-log entries to a wiki page in the subreddit that installed it.
-- It keeps those entries in Reddit-hosted storage for that subreddit only, for 90 days by default.
+- It keeps those entries in Reddit-hosted storage for that subreddit only, for 30 days by default.
 - It sends nothing to any outside server. It has no analytics, ads, payments, or AI use.
-- Known gap: it does not yet remove an entry when the post, comment, or account is deleted. See "Deleted content".
+- When a user or an admin deletes a post or comment, it blanks the stored author, link, and reason and rewrites the wiki page. Account deletion sends it no signal, so the retention period applies. See "Deleted content".
 
 ## What the app handles
 
@@ -40,14 +40,16 @@ The app calls no service other than Reddit's.
 
 ## Retention
 
-- Stored entries are deleted when they are older than "Days of history kept". Default 90 days, allowed 1 to 365. The check runs after every publish cycle, which is every 20 minutes.
-- Rows leave the wiki page when they pass "Days shown" (default 90, never more than the retention days) or when the page is trimmed for size.
+- Stored entries are deleted when they are older than "Days of history kept". Default 30 days, allowed 1 to 365. The check runs after every publish cycle, which is every 20 minutes.
+- Rows leave the wiki page when they pass "Days shown" (default 30, never more than the retention days) or when the page is trimmed for size.
 - Run status values are overwritten on each run and are not deleted on a schedule.
 - The wiki page itself is not deleted by the app.
 
 ## Deleted content
 
-The app does not yet delete a stored entry when its post, comment, or author account is deleted on Reddit. The author's username, the content link, and the reason text stay in app storage. They also stay on the wiki page. This lasts until the retention period ends or the page is rewritten without them. Reddit's Devvit Rules require removal on deletion. This is a known gap. Use a short retention period until it is fixed.
+- Post or comment deleted by its author or an admin: the app receives Reddit's delete event and blanks the author's username, the content link, and the reason text on every stored entry for that item. It then rewrites the wiki page. The action type, moderator label, and time remain. An entry for a removal by a moderator is kept, because that is a mod action and not a deletion.
+- Author account deleted: Reddit sends the app no event for this. Entries are not scrubbed early. They are deleted when the retention period ends (default 30 days).
+- Wiki revision history: the app cannot edit or delete revisions of the wiki page. Text it wrote before a scrub, including a deleted author's username, may remain in the page's revision history. Reddit's policies apply to that history, and moderators can manage it in Reddit's wiki tools.
 
 ## Uninstall and removal
 

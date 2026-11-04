@@ -54,8 +54,8 @@ describe('loadConfig', () => {
     expect(cfg).toEqual({
       subredditName: 'OpenSignups',
       wikiPage: 'modlog-devvit',
-      retentionDays: 90,
-      displayDays: 90,
+      retentionDays: 30,
+      displayDays: 30,
       wikiActions: [...DEFAULT_WIKI_ACTIONS],
       anonymizeModerators: true,
       ignoredModerators: [],

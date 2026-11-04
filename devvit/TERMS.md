@@ -23,7 +23,7 @@ The app's source code is licensed under the GNU General Public License v3.0 (see
 
 ## 5. Privacy
 
-See the [Privacy Policy](PRIVACY.md). It includes a known gap in how deleted content is handled.
+See the [Privacy Policy](PRIVACY.md). It covers how deleted content is handled.
 
 ## 6. No warranty
 

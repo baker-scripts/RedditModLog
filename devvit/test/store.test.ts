@@ -71,3 +71,27 @@ test('wiki hash and status round-trip', async () => {
   await store.setStatus({ lastResult: 'published' });
   expect((await store.getStatus()).lastResult).toBe('published');
 });
+
+test('scrubTarget blanks author, link and reason for one target only', async () => {
+  const store = new Store(redis);
+  await store.saveAction(row({ id: 'r1', permalink: P('gone'), reason: 'spam', targetAuthor: 'bob', moderator: 'AutoModerator' }));
+  await store.saveAction(row({ id: 'r2', action: 'addremovalreason', permalink: P('gone'), reason: 'rule 1', targetAuthor: 'bob' }));
+  await store.saveAction(row({ id: 'k1', permalink: P('keep'), reason: 'kept', targetAuthor: 'amy' }));
+
+  expect(await store.scrubTarget('gone')).toBe(2);
+
+  const rows = await store.loadDisplayRows(['removelink', 'addremovalreason'], 0);
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  expect(byId.get('r1')).toMatchObject({ targetAuthor: null, permalink: null, reason: '' });
+  expect(byId.get('r2')).toMatchObject({ targetAuthor: null, permalink: null, reason: '' });
+  expect(byId.get('k1')).toMatchObject({ targetAuthor: 'amy', permalink: P('keep'), reason: 'kept' });
+  expect((await store.priorRemovalsFor([row({ permalink: P('keep') })])).size).toBe(0);
+});
+
+test('scrubTarget blanks the prior-removal reason but keeps the record', async () => {
+  const store = new Store(redis);
+  await store.saveAction(row({ id: 'a', moderator: 'Reddit', reason: 'filtered', permalink: P('p9'), createdAt: 100 }));
+  await store.scrubTarget('p9');
+  const raw = await redis.hGet('prior', 'p9');
+  expect(raw ? JSON.parse(raw) : null).toEqual({ moderator: 'Reddit', reason: '', createdAt: 100 });
+});

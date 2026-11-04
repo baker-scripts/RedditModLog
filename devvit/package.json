@@ -2,7 +2,7 @@
   "private": true,
   "name": "autowikimod",
   "version": "0.0.0",
-  "license": "BSD-3-Clause",
+  "license": "GPL-3.0-only",
   "type": "module",
   "description": "Publishes a subreddit's moderation log to a wiki page (Reddit Devvit Web app).",
   "scripts": {

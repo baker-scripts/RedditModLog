@@ -60,8 +60,8 @@ export const ANON_LABEL = 'HumanModerator';
 
 export const DAYS_MIN = 1;
 export const DAYS_MAX = 365;
-export const DEFAULT_RETENTION_DAYS = 90;
-export const DEFAULT_DISPLAY_DAYS = 90;
+export const DEFAULT_RETENTION_DAYS = 30;
+export const DEFAULT_DISPLAY_DAYS = 30;
 export const DEFAULT_WIKI_PAGE = 'modlog-devvit';
 
 /** Python max_wiki_entries_per_page default. */
