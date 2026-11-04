@@ -140,6 +140,29 @@ export class Store {
     return removed;
   }
 
+  /**
+   * Blank targetAuthor, permalink and reason on every stored row for one post or
+   * comment, and the reason on its prior-removal record. Returns rows changed.
+   */
+  async scrubTarget(contentId: string): Promise<number> {
+    const all = await this.redis.hGetAll(K.act);
+    const updates: Record<string, string> = {};
+    for (const [id, json] of Object.entries(all)) {
+      const row = JSON.parse(json) as StoredAction;
+      if (bareContentId(row.permalink) !== contentId) continue;
+      updates[id] = JSON.stringify({ ...row, targetAuthor: null, permalink: null, reason: '' } satisfies StoredAction);
+    }
+    for (const batch of chunks(Object.keys(updates), CHUNK)) {
+      await this.redis.hSet(K.act, Object.fromEntries(batch.map((id) => [id, updates[id] as string])));
+    }
+    const prior = await this.redis.hGet(K.prior, contentId);
+    if (prior) {
+      const prev = JSON.parse(prior) as PriorRemoval;
+      await this.redis.hSet(K.prior, { [contentId]: JSON.stringify({ ...prev, reason: '' } satisfies PriorRemoval) });
+    }
+    return Object.keys(updates).length;
+  }
+
   async storedCount(): Promise<number> {
     return this.redis.hLen(K.act);
   }

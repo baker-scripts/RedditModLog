@@ -8,7 +8,7 @@ Before installing, note the following.
 
 - The wiki page shows the author's username for each action ("Post by u/name") and the moderator's reason text. Set the wiki page's permission to what you want visible, in the subreddit's wiki settings, before the first run.
 - Human moderators are always shown as `HumanModerator`. This cannot be turned off. `AutoModerator` and `Reddit` are shown by name.
-- The app stores rows for up to the retention period you set (default 90 days). A deleted post, comment, or account is not yet scrubbed from the app's storage or the wiki page. See [Deleted content](#deleted-content). Until that is fixed, use the shortest retention that works for you.
+- The app stores rows for up to the retention period you set (default 30 days). When a user or an admin deletes a post or comment, the app blanks that row's author, link, and reason and rewrites the wiki page. Account deletions are not signaled to the app, so retention is the limit there. See [Deleted content](#deleted-content).
 - The app writes to one wiki page that you name. It refuses `config/*`, `automoderator`, `usernotes`, and `toolbox`. Point it at a page that holds nothing else, because each run overwrites the page.
 
 ## What it does
@@ -29,8 +29,8 @@ Before installing, note the following.
 | Setting | Default | What it does |
 | --- | --- | --- |
 | Wiki page name | `modlog-devvit` | Page the log is written to. Lowercase letters, digits, `_`, `-`, `/`. Up to 128 characters. |
-| Days shown on the wiki page | 90 | 1 to 365. Never more than the retention days. |
-| Days of history kept | 90 | 1 to 365. Older entries are deleted from app storage each run. |
+| Days shown on the wiki page | 30 | 1 to 365. Never more than the retention days. |
+| Days of history kept | 30 | 1 to 365. Older entries are deleted from app storage each run. |
 | Actions shown on the wiki page | removals, spam removals, removal reasons, approvals | Pick from 43 mod-log action types, such as `banuser`, `lock`, or `addnote`. At least one is required. |
 | Anonymize moderators | on | Human moderators show as `HumanModerator`. Cannot be turned off. |
 | Ignored moderators | empty | Comma-separated usernames. Their actions are never stored. |
@@ -58,7 +58,12 @@ The app does not use HTTP fetch, payments, or any LLM. It sends no data off Redd
 
 ## Deleted content
 
-The app does not yet remove a stored row when its post, comment, or account is deleted. The author's username, the post or comment link, and the reason text stay in app storage and on the wiki page until the retention period ends. Reddit's Devvit Rules require removal on deletion. This is a known gap. If you need an entry removed sooner, lower "Days of history kept" and run **Modlog: Force rebuild**, or edit the wiki page, or contact us.
+Reddit's Devvit Rules do not allow keeping deleted content, even anonymized. The app handles this in two ways.
+
+- Post or comment deleted by its author or an admin: the app receives Reddit's delete event, blanks the author, link, and reason on every stored row for that item, and rewrites the wiki page. A removal by a moderator is a mod action, not a deletion, and its row stays.
+- Account deleted: Reddit sends the app no event for this, so rows are not scrubbed early. The retention period (default 30 days) is the limit. Lower "Days of history kept" for a shorter limit.
+
+Reddit keeps earlier versions of a wiki page in its revision history. The app cannot edit or delete revisions, so text it wrote before a scrub can remain there. Moderators can manage revisions in Reddit's wiki tools.
 
 ## Privacy and terms
 
@@ -73,6 +78,7 @@ To report an app that breaks Reddit's rules, use Reddit's own report flow.
 
 ## Changelog
 
+- Unreleased: scrub author, link, and reason from stored rows and the wiki page when a user or admin deletes a post or comment. Default days kept and days shown are now 30. The package license is now GPL-3.0-only, matching the repository.
 - 0.0.0: first Devvit Web version. Cron publish, three menu items, six settings.
 
 ## License

@@ -9,6 +9,10 @@
     "reddit": true,
     "redis": true
   },
+  "triggers": {
+    "onPostDelete": "/internal/triggers/on-post-delete",
+    "onCommentDelete": "/internal/triggers/on-comment-delete"
+  },
   "scheduler": {
     "tasks": {
       "publish-modlog": {
@@ -55,14 +59,14 @@
         "type": "number",
         "label": "Days shown on the wiki page",
         "helpText": "1-365. Capped at the retention days.",
-        "defaultValue": 90,
+        "defaultValue": 30,
         "validationEndpoint": "/internal/settings/validate-days"
       },
       "retentionDays": {
         "type": "number",
         "label": "Days of history kept",
         "helpText": "1-365. Older entries are deleted from app storage.",
-        "defaultValue": 90,
+        "defaultValue": 30,
         "validationEndpoint": "/internal/settings/validate-days"
       },
       "wikiActions": {

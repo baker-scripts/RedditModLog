@@ -11,12 +11,13 @@ row. Reddit hosts and authenticates it: no bot password, no daemon, no SQLite.
 
 | Path | Purpose |
 | --- | --- |
-| `devvit.json` | App manifest: server bundle, Redis + Reddit permissions, cron task, menu items, settings |
-| `src/server/index.ts` | Hono server: `/internal/cron/*`, `/internal/menu/*`, `/internal/settings/*` |
+| `devvit.json` | App manifest: server bundle, Redis + Reddit permissions, cron task, delete triggers, menu items, settings |
+| `src/server/index.ts` | Hono server: `/internal/cron/*`, `/internal/triggers/*`, `/internal/menu/*`, `/internal/settings/*` |
 | `src/server/reddit.ts` | Mod log and wiki calls through `reddit` from `@devvit/web/server` |
 | `src/core/record.ts` | Mod-log entry to stored row (Python `store_processed_action`) |
 | `src/core/render.ts` | Page renderer (Python `build_wiki_content`), FR-7 merging, FR-8 approval gating |
 | `src/core/store.ts` | Redis layout (hashes and sorted sets only) |
+| `src/core/deletion.ts` | Scrub rules for the `onPostDelete` and `onCommentDelete` triggers |
 | `src/core/publish.ts` | One cycle: ingest, render, hash-skip, size guard, write, prune |
 | `src/core/settings.ts` | Setting validators and config loader |
 | `test/` | Vitest + `@devvit/test`; `test/parity/` holds the Python golden comparison |
@@ -34,8 +35,8 @@ row. Reddit hosts and authenticates it: no bot password, no daemon, no SQLite.
 | Setting | Default | Notes |
 | --- | --- | --- |
 | Wiki page name | `modlog-devvit` | `config/*`, `automoderator`, `usernotes`, `toolbox` are refused |
-| Days shown on the wiki page | 90 | 1-365, capped at days kept |
-| Days of history kept | 90 | 1-365 |
+| Days shown on the wiki page | 30 | 1-365, capped at days kept |
+| Days of history kept | 30 | 1-365 |
 | Actions shown on the wiki page | removals, spam, `addremovalreason`, approvals | Python `DEFAULT_WIKI_ACTIONS` |
 | Anonymize moderators | on | Cannot be turned off, as in the Python app |
 | Ignored moderators | empty | Comma-separated; their actions are never stored |

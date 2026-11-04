@@ -5,9 +5,10 @@
 import { serve } from '@hono/node-server';
 import { context, createServer, getServerPort, redis, settings } from '@devvit/web/server';
 import type { TaskResponse } from '@devvit/web/server';
-import type { MenuItemRequest, SettingsValidationRequest, SettingsValidationResponse, UiResponse } from '@devvit/web/shared';
+import type { MenuItemRequest, OnCommentDeleteRequest, OnPostDeleteRequest, SettingsValidationRequest, SettingsValidationResponse, UiResponse } from '@devvit/web/shared';
 import { Hono } from 'hono';
 
+import { scrubDeleted } from '../core/deletion.js';
 import { describeResult, runCycle, type CycleMode } from '../core/publish.js';
 import {
   loadConfig,
@@ -83,6 +84,31 @@ app.post('/internal/menu/test-connection', async (c) => {
     console.error(`test-connection: ${checks.join('; ')}`);
     return c.json<UiResponse>({ showToast: { text: checks.join('; '), appearance: 'neutral' } });
   }
+});
+
+async function handleDeletion(kind: string, id: string | undefined, source: number | string | undefined): Promise<void> {
+  try {
+    const scrubbed = await scrubDeleted(store, id, source);
+    console.log(`${kind} deleted: scrubbed ${scrubbed} stored rows`);
+    if (scrubbed === 0) return;
+    const cfg = await currentConfig();
+    // A busy run is fine: the scrub changed the page content, so the next cycle rewrites it.
+    await runCycle(devvitReddit, store, cfg, 'force-rebuild');
+  } catch (err) {
+    console.error(`${kind} delete handler failed: ${errorText(err)}`);
+  }
+}
+
+app.post('/internal/triggers/on-post-delete', async (c) => {
+  const body = await c.req.json<OnPostDeleteRequest>();
+  await handleDeletion('post', body.postId, body.source);
+  return c.json({}, 200);
+});
+
+app.post('/internal/triggers/on-comment-delete', async (c) => {
+  const body = await c.req.json<OnCommentDeleteRequest>();
+  await handleDeletion('comment', body.commentId, body.source);
+  return c.json({}, 200);
 });
 
 function validationRoute<T>(path: string, validate: Validator<T>): void {
