@@ -31,6 +31,11 @@
     "vitest": "5.0.5"
   },
   "overrides": {
-    "minimatch": "11.0.4"
+    "minimatch": "11.0.4",
+    "image-size": "2.0.3",
+    "tmp": "0.2.7",
+    "@devvit/cli": {
+      "js-yaml": "4.3.2"
+    }
   }
 }
