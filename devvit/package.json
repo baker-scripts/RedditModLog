@@ -27,7 +27,7 @@
     "@devvit/test": "0.14.8",
     "@types/node": "24.19.2",
     "typescript": "7.0.2",
-    "vite": "8.3.4",
+    "vite": "8.3.8",
     "vitest": "5.0.5"
   },
   "overrides": {
