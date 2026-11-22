@@ -31,7 +31,7 @@
     "vitest": "5.0.5"
   },
   "overrides": {
-    "minimatch": "11.0.8",
+    "minimatch": "11.0.9",
     "image-size": "2.0.3",
     "tmp": "0.2.7",
     "@devvit/cli": {
